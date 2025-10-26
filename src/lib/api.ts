@@ -24,20 +24,24 @@ export const api = {
 
   // 🟢 CUSTOMER LOGIN (if you want separate login for customers)
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/auth/customer-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      credentials: "include",
-      body: new URLSearchParams({ email, password }),
-    });
+  const response = await fetch(`${BASE_URL}/auth/customer-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    credentials: "include",
+    body: new URLSearchParams({ email, password }),
+  });
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.message || "Invalid customer credentials");
-    }
+  // Handle failure
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || "Invalid customer credentials");
+  }
 
-    return response.json().catch(() => ({ message: "Login successful" }));
-  },
+  // Only return data on success
+  return response.json();
+},
+
+
 
   // =========================
   // ADMIN APIs
@@ -69,7 +73,8 @@ export const api = {
       throw new Error(`Failed to fetch customers (${response.status})`);
     }
 
-    return response.json();
+    const jsonResponse = await response.json();
+    return jsonResponse.data;
   },
 
   // 🟢 ADD CUSTOMER (admin only)

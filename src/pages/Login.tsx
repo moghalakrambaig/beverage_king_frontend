@@ -35,7 +35,6 @@ export function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 via-yellow-100 to-yellow-50">
-      {/* Optional soft background pattern */}
       <div className="absolute inset-0 bg-yellow-50 bg-[url('/pattern.svg')] opacity-10 pointer-events-none"></div>
 
       <div className="relative w-full max-w-md p-10 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-yellow-200">
@@ -86,12 +85,17 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500 rounded-xl shadow-sm pr-10 placeholder-yellow-400 hover:border-yellow-400 transition"
               />
+              {/* 👁 Show/Hide password icon inside input */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-yellow-600 hover:text-yellow-800 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-yellow-600 hover:text-yellow-800 transition"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>

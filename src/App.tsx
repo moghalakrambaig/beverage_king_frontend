@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,10 +10,24 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
+import CustomerDetails from "./pages/CustomerDetails";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    const loadingContainer = document.getElementById('loading-container');
+    if (loadingContainer) {
+      // Optional: Add a fade-out effect
+      loadingContainer.style.transition = 'opacity 0.5s ease';
+      loadingContainer.style.opacity = '0';
+      setTimeout(() => {
+        loadingContainer.remove();
+      }, 500);
+    }
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -26,10 +41,12 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/customer-details/:id" element={<CustomerDetails />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  )
+};
 
 export default App;

@@ -4,17 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Wine } from "lucide-react";
 
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSignUp?: (username: string, email: string, password: string) => Promise<void>;
+  onSignIn?: (email: string, password: string) => Promise<void>;
 }
 
-export const AuthDialog = ({ open, onOpenChange, onSuccess }: AuthDialogProps) => {
+export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -25,44 +25,22 @@ export const AuthDialog = ({ open, onOpenChange, onSuccess }: AuthDialogProps) =
     const formData = new FormData(e.currentTarget);
     const email = formData.get("signup-email") as string;
     const password = formData.get("signup-password") as string;
-    const fullName = formData.get("full-name") as string;
+    const username = formData.get("full-name") as string;
 
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
-
-    setLoading(false);
-
-    if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Welcome!",
-        description: "Your account has been created successfully.",
-      });
-      onSuccess();
+    try {
+      if (onSignUp) await onSignUp(username, email, password);
+      toast({ title: "Success", description: "Account created successfully!" });
       onOpenChange(false);
+    } catch (err: any) {
+      toast({ title: "Sign Up Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,35 +53,19 @@ export const AuthDialog = ({ open, onOpenChange, onSuccess }: AuthDialogProps) =
     const password = formData.get("signin-password") as string;
 
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
-      onSuccess();
+    try {
+      if (onSignIn) await onSignIn(email, password);
+      toast({ title: "Welcome Back!", description: "Signed in successfully." });
       onOpenChange(false);
+    } catch (err: any) {
+      toast({ title: "Sign In Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,79 +90,39 @@ export const AuthDialog = ({ open, onOpenChange, onSuccess }: AuthDialogProps) =
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
+          {/* SIGN IN TAB */}
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  name="signin-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                  className="bg-background"
-                />
+                <Input id="signin-email" name="signin-email" type="email" placeholder="you@example.com" required className="bg-background" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
-                <Input
-                  id="signin-password"
-                  name="signin-password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  className="bg-background"
-                />
+                <Input id="signin-password" name="signin-password" type="password" placeholder="••••••••" required className="bg-background" />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </TabsContent>
 
+          {/* SIGN UP TAB */}
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="full-name">Full Name (Optional)</Label>
-                <Input
-                  id="full-name"
-                  name="full-name"
-                  type="text"
-                  placeholder="John Doe"
-                  className="bg-background"
-                />
+                <Input id="full-name" name="full-name" type="text" placeholder="John Doe" className="bg-background" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  name="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                  className="bg-background"
-                />
+                <Input id="signup-email" name="signup-email" type="email" placeholder="you@example.com" required className="bg-background" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
-                <Input
-                  id="signup-password"
-                  name="signup-password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  className="bg-background"
-                />
+                <Input id="signup-password" name="signup-password" type="password" placeholder="••••••••" required className="bg-background" />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
                 {loading ? "Creating account..." : "Create Account"}
               </Button>
             </form>

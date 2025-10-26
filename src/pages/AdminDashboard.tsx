@@ -18,36 +18,49 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, AlertCircle, Loader } from "lucide-react";
 
 export function AdminDashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // ✅ Load customers on mount
   useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem("email"); // simple check
-    if (!isLoggedIn) {
-      navigate("/login");
-      return;
-    }
-
-    api.getCustomers()
-      .then(setCustomers)
-      .catch((err) => {
-        console.error(err);
-        alert("Failed to load customers. Are you logged in?");
+    const checkAuthAndFetchData = async () => {
+      const isLoggedIn = sessionStorage.getItem("email");
+      if (!isLoggedIn) {
         navigate("/login");
-      });
+        return;
+      }
+
+      try {
+        const data = await api.getCustomers();
+        console.log("Fetched data:", data);
+        if (Array.isArray(data)) {
+          setCustomers(data);
+        } else {
+          console.error("Fetched data is not an array:", data);
+          setError("Received invalid data format from server.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load customers. Are you logged in?");
+        // Optional: navigate to login after a delay
+        // setTimeout(() => navigate("/login"), 5000);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndFetchData();
   }, [navigate]);
 
-  // ✅ Logout
   const handleLogout = () => {
     sessionStorage.removeItem("email");
     navigate("/login");
   };
 
-  // ✅ Delete customer
   const handleDelete = async (id: number) => {
     try {
       await api.deleteCustomer(id);
@@ -58,44 +71,49 @@ export function AdminDashboard() {
     }
   };
 
-  // ✅ Export CSV
   const handleExportCSV = () => {
     if (!customers.length) return alert("No customers to export");
-
     const headers = ["ID", "Name", "Mobile", "Email", "Points"];
-    const rows = customers.map((c) => [
-      c.id,
-      c.cus_name,
-      c.mobile,
-      c.email,
-      c.points,
-    ]);
-
+    const rows = customers.map((c) => [c.id, c.cus_name, c.mobile, c.email, c.points]);
     const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "customers.csv");
   };
 
-  // ✅ Export Excel
   const handleExportExcel = () => {
     if (!customers.length) return alert("No customers to export");
-
     const worksheet = XLSX.utils.json_to_sheet(
-      customers.map((c) => ({
-        ID: c.id,
-        Name: c.cus_name,
-        Mobile: c.mobile,
-        Email: c.email,
-        Points: c.points,
-      }))
+      customers.map((c) => ({ ID: c.id, Name: c.cus_name, Mobile: c.mobile, Email: c.email, Points: c.points }))
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
-
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(blob, "customers.xlsx");
   };
+
+  // Loading State
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen flex-col">
+        <Loader className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Loading customers...</p>
+      </div>
+    );
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen flex-col bg-destructive/10">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="mt-4 text-destructive-foreground font-semibold">{error}</p>
+        <Button onClick={() => navigate("/login")} variant="destructive" className="mt-6">
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -104,7 +122,6 @@ export function AdminDashboard() {
         <Button onClick={handleLogout}>Logout</Button>
       </div>
 
-      {/* ✅ Toolbar with Export Dropdown */}
       <div className="flex justify-end mb-4 space-x-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -114,53 +131,47 @@ export function AdminDashboard() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleExportCSV}>
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportExcel}>
-              Export as Excel
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button>Add Customer</Button>
       </div>
 
-      {/* ✅ Customer Table */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Mobile</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Points</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {customers.map((customer) => (
-            <TableRow key={customer.id}>
-              <TableCell>{customer.id}</TableCell>
-              <TableCell>{customer.cus_name}</TableCell>
-              <TableCell>{customer.mobile}</TableCell>
-              <TableCell>{customer.email}</TableCell>
-              <TableCell>{customer.points}</TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm" className="mr-2">
-                  Update
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(customer.id)}
-                >
-                  Delete
-                </Button>
-              </TableCell>
+      {customers.length === 0 ? (
+        <div className="text-center py-20 bg-muted/20 rounded-lg">
+          <h3 className="text-xl font-semibold">No Customers Found</h3>
+          <p className="text-muted-foreground mt-2">Your customer list is currently empty.</p>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Mobile</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Points</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {customers.map((customer) => (
+              <TableRow key={customer.id}>
+                <TableCell>{customer.id}</TableCell>
+                <TableCell>{customer.cus_name}</TableCell>
+                <TableCell>{customer.mobile}</TableCell>
+                <TableCell>{customer.email}</TableCell>
+                <TableCell>{customer.points}</TableCell>
+                <TableCell>
+                  <Button variant="outline" size="sm" className="mr-2">Update</Button>
+                  <Button variant="destructive" size="sm" onClick={() => handleDelete(customer.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }
