@@ -8,7 +8,7 @@ export const DiscordSection = () => {
   };
 
   return (
-    <div id="discord-section" className="w-full py-20 px-4 bg-gradient-to-b from-background to-card scroll-mt-24">
+    <div id="discord-section" className="w-full py-20 px-4 scroll-mt-24">
       <div className="max-w-6xl mx-auto">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border border-primary/20 p-8 md:p-12">
           {/* Decorative elements */}

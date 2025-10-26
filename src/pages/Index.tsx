@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Hero } from "@/components/Hero";
 import { PointsDisplay } from "@/components/PointsDisplay";
@@ -27,11 +27,22 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      const customer = JSON.parse(storedUser);
+      setUser(customer);
+      setPoints(customer.points || 0);
+      setTotalEarned(customer.points || 0);
+    }
+  }, []);
+
   // Sign Up Handler
   const handleSignUp = async (username: string, email: string, password: string) => {
     try {
       const res = await api.signup(username, email, password);
       const customer = res.data;
+      sessionStorage.setItem("user", JSON.stringify(customer));
       setUser(customer);
       setPoints(customer.points || 0);
       setTotalEarned(customer.points || 0);
@@ -47,6 +58,7 @@ const Index = () => {
       const res = await api.login(email, password);
       if (!res.data) throw new Error("Invalid credentials");
       const customer = res.data;
+      sessionStorage.setItem("user", JSON.stringify(customer));
       setUser(customer);
       setPoints(customer.points || 0);
       setTotalEarned(customer.points || 0);
@@ -58,6 +70,7 @@ const Index = () => {
 
   // Sign Out Handler
   const handleSignOut = () => {
+    sessionStorage.removeItem("user");
     setUser(null);
     setPoints(0);
     setTotalEarned(0);
@@ -70,20 +83,26 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src={bkLogo} alt="Beverage King" className="w-12 h-12 object-contain" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+            <img
+              src={bkLogo}
+              alt="Beverage King"
+              className="w-12 h-12 object-contain rounded-full shadow-lg transition-transform duration-300 hover:scale-110"
+            />
+            <span className="text-4xl font-bold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
               Beverage King
             </span>
           </Link>
 
           <div className="flex items-center gap-4">
             {/* Nav Options */}
-            <Link to="#join-section" className="hidden sm:block text-sm text-primary hover:underline">
-              Join Insiders Club
-            </Link>
-            <Link to="#discord-section" className="hidden sm:block text-sm text-purple-500 hover:underline">
-              Join Discord
-            </Link>
+            <div className="hidden sm:flex items-center gap-6 text-sm">
+              <a href="#join-section" className="text-muted-foreground hover:text-primary transition-colors">
+                Insiders Club
+              </a>
+              <a href="#discord-section" className="text-muted-foreground hover:text-primary transition-colors">
+                Discord
+              </a>
+            </div>
 
             {/* Auth Buttons */}
             {user ? (

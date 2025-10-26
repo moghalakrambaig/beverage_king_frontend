@@ -25,17 +25,23 @@ const CustomerDetails = () => {
   // Fetch customer on mount
   useEffect(() => {
     const fetchCustomer = async () => {
+      setLoading(true);
       try {
         if (!id) return;
-        const res = await api.getCustomers(); // fetch all customers
-        const cust = res.data.find((c: Customer) => c.id === parseInt(id));
-        if (cust) setCustomer(cust);
+        const cust = await api.getCustomerById(id);
+        if (cust) {
+          setCustomer(cust);
+        } else {
+          toast({ title: "Error", description: "Customer not found", variant: "destructive" });
+        }
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
+      } finally {
+        setLoading(false);
       }
     };
     fetchCustomer();
-  }, [id]);
+  }, [id, toast]);
 
   // Handle update
   const handleUpdate = async () => {
@@ -54,7 +60,21 @@ const CustomerDetails = () => {
     setLoading(false);
   };
 
-  if (!customer) return <p className="p-4">Loading customer details...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen flex-col">
+        <p className="mt-4 text-muted-foreground">loading please wait</p>
+      </div>
+    );
+  }
+
+  if (!customer) {
+    return (
+      <div className="flex items-center justify-center min-h-screen flex-col">
+        <p className="mt-4 text-muted-foreground">Customer not found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 max-w-md">

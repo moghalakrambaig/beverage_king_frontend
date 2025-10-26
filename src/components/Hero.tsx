@@ -8,7 +8,7 @@ interface HeroProps {
 
 export const Hero = ({ onGetStarted }: HeroProps) => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-card">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(45_100%_60%/0.1),transparent)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(280_40%_20%/0.3),transparent)]" />

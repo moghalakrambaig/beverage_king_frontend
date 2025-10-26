@@ -83,6 +83,10 @@ All colors MUST be HSL.
   animation: gradient-shift 3s ease infinite;
 }
 
+.font-cursive {
+  font-family: 'Dancing Script', cursive;
+}
+
 .loading-container {
   display: flex;
   align-items: center;
@@ -296,6 +300,10 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1514933651103-005eec06a04b');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
 }
 
@@ -308,4 +316,8 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   visibility: hidden;
   display: none !important;
   pointer-events: none;
+}
+
+html {
+  scroll-behavior: smooth;
 }

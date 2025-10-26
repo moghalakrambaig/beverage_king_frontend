@@ -77,6 +77,19 @@ export const api = {
     return jsonResponse.data;
   },
 
+  getCustomerById: async (id: string) => {
+    const response = await fetch(`${BASE_URL}/customers/${id}`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch customer (${response.status})`);
+    }
+
+    const jsonResponse = await response.json();
+    return jsonResponse.data;
+  },
+
   // 🟢 ADD CUSTOMER (admin only)
   addCustomer: async (customer: any) => {
     const response = await fetch(`${BASE_URL}/customers`, {
