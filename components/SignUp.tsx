@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 export function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mobile, setMobile] = useState("");
   const [message, setMessage] = useState("");
 
   const handleSignup = async () => {
@@ -13,7 +14,13 @@ export function SignupPage() {
       const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          mobile,
+          cus_name: email.split('@')[0], // Default name from email
+          points: 0 // Initialize points to 0
+        }),
       });
 
       if (response.ok) {
@@ -47,6 +54,15 @@ export function SignupPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="mb-3"
+        />
+        <Label>Mobile Number</Label>
+        <Input
+          type="tel"
+          placeholder="Enter mobile number"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          className="mb-3"
+          pattern="[0-9]*"
         />
         <Button onClick={handleSignup} className="w-full bg-yellow-500">
           Sign Up

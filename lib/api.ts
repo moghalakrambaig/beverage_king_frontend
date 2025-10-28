@@ -6,11 +6,11 @@ export const api = {
   // =========================
 
   // 🟢 SIGN UP (no authentication required)
-  signup: async (username: string, email: string, password: string) => {
+  signup: async (username: string, email: string, password: string, mobile: string) => {
     const response = await fetch(`${BASE_URL}/customers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cus_name: username, email, password }),
+      body: JSON.stringify({ cus_name: username, email, password, mobile, points: 0 }),
       credentials: "include",
     });
 

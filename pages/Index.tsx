@@ -38,15 +38,21 @@ const Index = () => {
   }, []);
 
   // Sign Up Handler
-  const handleSignUp = async (username: string, email: string, password: string) => {
+  const handleSignUp = async (username: string, email: string, password: string, mobile: string) => {
     try {
-      const res = await api.signup(username, email, password);
+      const res = await api.signup(username, email, password, mobile);
       const customer = res.data;
-      sessionStorage.setItem("user", JSON.stringify(customer));
-      setUser(customer);
-      setPoints(customer.points || 0);
-      setTotalEarned(customer.points || 0);
-      toast({ title: "Welcome!", description: "Account created successfully." });
+      if (customer && customer.id) {
+        sessionStorage.setItem("user", JSON.stringify(customer));
+        setUser(customer);
+        setPoints(customer.points || 0);
+        setTotalEarned(customer.points || 0);
+        toast({ title: "Welcome!", description: "Account created successfully." });
+        // Use setTimeout to ensure state is set before navigation
+        setTimeout(() => navigate(`/customer-details/${customer.id}`), 0);
+      } else {
+        toast({ title: "Sign up failed", description: "Invalid customer data returned.", variant: "destructive" });
+      }
     } catch (err: any) {
       toast({ title: "Sign up failed", description: err.message, variant: "destructive" });
     }
@@ -56,13 +62,31 @@ const Index = () => {
   const handleSignIn = async (email: string, password: string) => {
     try {
       const res = await api.login(email, password);
-      if (!res.data) throw new Error("Invalid credentials");
-      const customer = res.data;
-      sessionStorage.setItem("user", JSON.stringify(customer));
-      setUser(customer);
-      setPoints(customer.points || 0);
-      setTotalEarned(customer.points || 0);
-      toast({ title: "Welcome back!", description: "Signed in successfully." });
+      console.log("Login API response (raw):", res);
+      // Try to extract customer object from various possible shapes
+      let customer = null;
+      if (res && res.data && res.data.id) customer = res.data;
+      else if (res && res.id) customer = res;
+      else if (res && typeof res === 'object') {
+        // Try to find a customer-like object in the response
+        for (const key of Object.keys(res)) {
+          if (res[key] && typeof res[key] === 'object' && res[key].id) {
+            customer = res[key];
+            break;
+          }
+        }
+      }
+      console.log("Extracted customer object:", customer);
+      if (customer && customer.id) {
+        sessionStorage.setItem("user", JSON.stringify(customer));
+        setUser(customer);
+        setPoints(customer.points || 0);
+        setTotalEarned(customer.points || 0);
+        toast({ title: "Welcome back!", description: "Signed in successfully." });
+        setTimeout(() => navigate(`/customer-details/${customer.id}`), 0);
+      } else {
+        toast({ title: "Sign in failed", description: "Invalid credentials or user not found.", variant: "destructive" });
+      }
     } catch (err: any) {
       toast({ title: "Sign in failed", description: err.message || "Invalid credentials", variant: "destructive" });
     }
@@ -165,13 +189,7 @@ const Index = () => {
             <p className="text-muted-foreground mb-8 text-base">
               Ask the cashier how to sign up, or simply join during checkout!
             </p>
-            <Button
-              onClick={() => setAuthDialogOpen(true)}
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              Sign Up Now
-            </Button>
+            {/* Sign Up button removed as per requirements */}
           </div>
         )}
 

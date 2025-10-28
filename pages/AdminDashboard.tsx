@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -18,12 +20,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, AlertCircle, Loader } from "lucide-react";
+import { ChevronDown, AlertCircle, Loader, PlusCircle, MinusCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function AdminDashboard() {
+  const { toast } = useToast();
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({ cus_name: "", mobile: "", email: "", points: 0 });
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,6 +77,17 @@ export function AdminDashboard() {
       console.error(error);
       alert("Failed to delete customer");
     }
+  };
+
+  const handleAdjustPoints = (customerId: number, delta: number) => {
+    const cust = customers.find((c) => c.id === customerId);
+    if (!cust) return;
+    const newPoints = Math.max(0, (cust.points || 0) + delta);
+    
+    // Only update the UI, don't make API call
+    setCustomers((curr) => curr.map((c) =>
+      c.id === customerId ? { ...c, points: newPoints } : c
+    ));
   };
 
   const handleExportCSV = () => {
@@ -118,7 +137,10 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex gap-2 items-center">
+          <Button variant="outline" onClick={() => navigate("/")}>Home</Button>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        </div>
         <Button onClick={handleLogout}>Logout</Button>
       </div>
 
@@ -135,8 +157,53 @@ export function AdminDashboard() {
             <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button>Add Customer</Button>
+        <Button onClick={() => setShowAddForm((s) => !s)}>{showAddForm ? "Close" : "Add Customer"}</Button>
       </div>
+
+      {showAddForm && (
+        <div className="mb-6 p-4 border rounded-lg bg-muted/5">
+          <h3 className="text-lg font-medium mb-2">Add Customer</h3>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setAdding(true);
+              try {
+                const created = await api.addCustomer(newCustomer);
+                // server may return created customer; if not, optimistically append
+                setCustomers((curr) => (created?.data ? [created.data, ...curr] : [{ ...newCustomer, id: Date.now() }, ...curr]));
+                setNewCustomer({ cus_name: "", mobile: "", email: "", points: 0 });
+                setShowAddForm(false);
+              } catch (err) {
+                console.error(err);
+                alert("Failed to add customer");
+              } finally {
+                setAdding(false);
+              }
+            }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end"
+          >
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" value={newCustomer.cus_name} onChange={(e) => setNewCustomer({ ...newCustomer, cus_name: e.target.value })} required />
+            </div>
+            <div>
+              <Label htmlFor="mobile">Mobile</Label>
+              <Input id="mobile" value={newCustomer.mobile} onChange={(e) => setNewCustomer({ ...newCustomer, mobile: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} required />
+            </div>
+            <div>
+              <Label htmlFor="points">Points</Label>
+              <Input id="points" type="number" min={0} value={newCustomer.points} onChange={(e) => setNewCustomer({ ...newCustomer, points: Number(e.target.value) })} />
+            </div>
+            <div className="md:col-span-4">
+              <Button type="submit" disabled={adding}>{adding ? "Adding..." : "Create Customer"}</Button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {customers.length === 0 ? (
         <div className="text-center py-20 bg-muted/20 rounded-lg">
@@ -162,9 +229,54 @@ export function AdminDashboard() {
                 <TableCell>{customer.cus_name}</TableCell>
                 <TableCell>{customer.mobile}</TableCell>
                 <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.points}</TableCell>
                 <TableCell>
-                  <Button variant="outline" size="sm" className="mr-2">Update</Button>
+                  <div className="flex items-center space-x-2">
+                    <Button size="sm" variant="ghost" onClick={() => handleAdjustPoints(customer.id, -1)} disabled={updatingId === customer.id}>
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
+                    <span className="font-medium">{customer.points ?? 0}</span>
+                    <Button size="sm" variant="ghost" onClick={() => handleAdjustPoints(customer.id, 1)} disabled={updatingId === customer.id}>
+                      <PlusCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mr-2"
+                    onClick={async () => {
+                      setUpdatingId(customer.id);
+                      try {
+                        const response = await api.updateCustomer(customer.id, customer);
+                        if (response?.data) {
+                          setCustomers((curr) => curr.map((c) =>
+                            c.id === customer.id ? response.data : c
+                          ));
+                        }
+                        toast({
+                          title: "Customer Updated",
+                          description: `${customer.cus_name}'s information has been updated.`,
+                          variant: "default"
+                        });
+                      } catch (error) {
+                        console.error(error);
+                        // Revert to original data from server
+                        const originalData = await api.getCustomers();
+                        setCustomers(originalData);
+                        toast({
+                          title: "Update Failed",
+                          description: "Failed to update customer information.",
+                          variant: "destructive"
+                        });
+                      } finally {
+                        setUpdatingId(null);
+                      }
+                    }}
+                    disabled={updatingId === customer.id}
+                  >
+                    Update
+                  </Button>
                   <Button variant="destructive" size="sm" onClick={() => handleDelete(customer.id)}>Delete</Button>
                 </TableCell>
               </TableRow>

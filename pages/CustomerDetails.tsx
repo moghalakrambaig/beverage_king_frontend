@@ -20,6 +20,7 @@ const CustomerDetails = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   // Fetch customer on mount
@@ -78,8 +79,10 @@ const CustomerDetails = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-md">
-      <h2 className="text-2xl font-bold mb-4">Customer Details</h2>
-      
+      <div className="flex gap-2 items-center mb-4">
+        <Button variant="outline" onClick={() => window.location.href = "/"}>Home</Button>
+        <h2 className="text-2xl font-bold">Customer Details</h2>
+      </div>
       <div className="space-y-4">
         <div>
           <Label htmlFor="name">Name</Label>
@@ -114,13 +117,28 @@ const CustomerDetails = () => {
 
         <div>
           <Label htmlFor="password">Password (Leave blank to keep current)</Label>
-          <Input
-            id="password"
-            type="password"
-            value={customer.password || ""}
-            onChange={(e) => setCustomer({ ...customer, password: e.target.value })}
-            disabled={!editing}
-          />
+          <div className="relative flex items-center">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={customer.password || ""}
+              onChange={(e) => setCustomer({ ...customer, password: e.target.value })}
+              disabled={!editing}
+              className="pr-16"
+            />
+            {editing && (
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-2 px-2 py-1 rounded text-xs font-medium text-primary bg-muted border border-input shadow-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
+                style={{ top: '50%', transform: 'translateY(-50%)' }}
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            )}
+          </div>
         </div>
 
         {editing ? (
