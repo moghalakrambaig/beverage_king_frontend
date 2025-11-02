@@ -10,7 +10,7 @@ import { Wine } from "lucide-react";
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSignUp?: (username: string, email: string, password: string) => Promise<void>;
+  onSignUp?: (username: string, email: string, password: string, mobile: string) => Promise<void>;
   onSignIn?: (email: string, password: string) => Promise<void>;
 }
 
@@ -26,15 +26,16 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
     const email = formData.get("signup-email") as string;
     const password = formData.get("signup-password") as string;
     const username = formData.get("full-name") as string;
+    const mobile = formData.get("signup-mobile") as string;
 
-    if (!email || !password) {
+    if (!email || !password || !mobile) {
       toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     try {
-      if (onSignUp) await onSignUp(username, email, password);
+      if (onSignUp) await onSignUp(username, email, password, mobile);
       toast({ title: "Success", description: "Account created successfully!" });
       onOpenChange(false);
     } catch (err: any) {
@@ -117,6 +118,10 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input id="signup-email" name="signup-email" type="email" placeholder="you@example.com" required className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-mobile">Mobile Number</Label>
+                <Input id="signup-mobile" name="signup-mobile" type="tel" placeholder="e.g. 9876543210" required className="bg-background" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { QRCodeSVG } from "qrcode.react";
-import { Share2, Facebook, Twitter, Linkedin, Mail, QrCode } from "lucide-react";
+import { Share2, Facebook, Twitter, Linkedin, Mail, QrCode, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -26,7 +26,6 @@ export const ShareSidebar = () => {
         }
       }
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(websiteUrl);
       toast({
         title: "Link copied!",
@@ -56,8 +55,18 @@ export const ShareSidebar = () => {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  const shareOnInstagram = async () => {
+    // Instagram doesn’t allow direct link sharing via URL parameters
+    await navigator.clipboard.writeText(websiteUrl);
+    window.open("https://www.instagram.com/", "_blank");
+    toast({
+      title: "Link copied!",
+      description: "Website link copied — paste it in your Instagram story or bio.",
+    });
+  };
+
   return (
-  <div className="fixed right-0 top-1/2 -translate-y-1/2 z-60">
+    <div className="fixed right-0 top-1/2 -translate-y-1/2 z-60">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button 
@@ -116,6 +125,14 @@ export const ShareSidebar = () => {
               >
                 <Mail className="w-4 h-4 mr-2" />
                 Email
+              </Button>
+              <Button
+                onClick={shareOnInstagram}
+                variant="outline"
+                className="w-full border-primary/30 hover:bg-primary/10"
+              >
+                <Instagram className="w-4 h-4 mr-2" />
+                Instagram
               </Button>
             </div>
           </div>

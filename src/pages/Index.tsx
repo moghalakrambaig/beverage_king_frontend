@@ -38,9 +38,9 @@ const Index = () => {
   }, []);
 
   // Sign Up Handler
-  const handleSignUp = async (username: string, email: string, password: string) => {
+  const handleSignUp = async (username: string, email: string, password: string, mobile: string) => {
     try {
-      const res = await api.signup(username, email, password);
+      const res = await api.signup(username, email, password, mobile);
       const customer = res.data;
       sessionStorage.setItem("user", JSON.stringify(customer));
       setUser(customer);
@@ -96,11 +96,8 @@ const Index = () => {
           <div className="flex items-center gap-4">
             {/* Nav Options */}
             <div className="hidden sm:flex items-center gap-6 text-sm">
-              <a href="#join-section" className="text-muted-foreground hover:text-primary transition-colors">
-                Insiders Club
-              </a>
               <a href="#discord-section" className="text-muted-foreground hover:text-primary transition-colors">
-                Discord
+                Join Discord
               </a>
             </div>
 
@@ -152,29 +149,6 @@ const Index = () => {
       {/* Main content */}
       <main className="pt-12">
         <Hero onGetStarted={() => !user && setAuthDialogOpen(true)} />
-
-        {user ? (
-          <PointsDisplay points={points} totalEarned={totalEarned} />
-        ) : (
-          <div id="join-section" className="py-16 px-4 text-center max-w-3xl mx-auto scroll-mt-24">
-            <h2 className="text-3xl font-bold mb-6">Join the Insiders Club</h2>
-            <p className="text-muted-foreground mb-6 text-lg max-w-3xl mx-auto">
-              This is your VIP pass to everything happening at the crown jewel of spirits. 
-              Join the Insiders Club today — and never miss a drop again.
-            </p>
-            <p className="text-muted-foreground mb-8 text-base">
-              Ask the cashier how to sign up, or simply join during checkout!
-            </p>
-            <Button
-              onClick={() => setAuthDialogOpen(true)}
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              Sign Up Now
-            </Button>
-          </div>
-        )}
-
         <div id="discord-section">
           <DiscordSection />
         </div>

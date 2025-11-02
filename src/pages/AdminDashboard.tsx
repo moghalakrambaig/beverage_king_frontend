@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -92,6 +93,21 @@ export function AdminDashboard() {
     saveAs(blob, "customers.xlsx");
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const response = await api.uploadCsv(file);
+      if (response.data) {
+        setCustomers(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload CSV");
+    }
+  };
+
   // Loading State
   if (loading) {
     return (
@@ -123,6 +139,14 @@ export function AdminDashboard() {
       </div>
 
       <div className="flex justify-end mb-4 space-x-2">
+        <input
+          type="file"
+          accept=".csv,.xlsx"
+          style={{ display: "none" }}
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+        />
+        <Button onClick={() => fileInputRef.current?.click()}>Upload File</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="flex items-center">

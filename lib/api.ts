@@ -5,12 +5,12 @@ export const api = {
   // CUSTOMER APIs
   // =========================
 
-  // 🟢 SIGN UP (no authentication required)
+  // 🟢 SIGN UP
   signup: async (username: string, email: string, password: string, mobile: string) => {
     const response = await fetch(`${BASE_URL}/customers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cus_name: username, email, password, mobile, points: 0 }),
+      body: JSON.stringify({ cus_name: username, email, password, mobile }),
       credentials: "include",
     });
 
@@ -22,26 +22,22 @@ export const api = {
     return response.json();
   },
 
-  // 🟢 CUSTOMER LOGIN (if you want separate login for customers)
+  // 🟢 CUSTOMER LOGIN
   login: async (email: string, password: string) => {
-  const response = await fetch(`${BASE_URL}/auth/customer-login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    credentials: "include",
-    body: new URLSearchParams({ email, password }),
-  });
+    const response = await fetch(`${BASE_URL}/auth/customer-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "include",
+      body: new URLSearchParams({ email, password }),
+    });
 
-  // Handle failure
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.message || "Invalid customer credentials");
-  }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || "Invalid customer credentials");
+    }
 
-  // Only return data on success
-  return response.json();
-},
-
-
+    return response.json();
+  },
 
   // =========================
   // ADMIN APIs
@@ -53,7 +49,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       credentials: "include",
-      body: new URLSearchParams({ email, password }), // must match SecurityConfig usernameParameter/passwordParameter
+      body: new URLSearchParams({ email, password }),
     });
 
     if (!response.ok) {
@@ -63,20 +59,21 @@ export const api = {
     return response.json().catch(() => ({ message: "Login successful" }));
   },
 
-  // 🟢 GET ALL CUSTOMERS (admin only, session-based)
+  // 🟢 GET ALL CUSTOMERS
   getCustomers: async () => {
     const response = await fetch(`${BASE_URL}/customers`, {
-      credentials: "include", // session cookie handles auth
+      credentials: "include",
     });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch customers (${response.status})`);
     }
 
-    const jsonResponse = await response.json();
-    return jsonResponse.data;
+    const jsonResponse = await response.json().catch(() => []);
+    return jsonResponse.data || jsonResponse;
   },
 
+  // 🟢 GET CUSTOMER BY ID
   getCustomerById: async (id: string) => {
     const response = await fetch(`${BASE_URL}/customers/${id}`, {
       credentials: "include",
@@ -90,7 +87,7 @@ export const api = {
     return jsonResponse.data;
   },
 
-  // 🟢 ADD CUSTOMER (admin only)
+  // 🟢 ADD CUSTOMER
   addCustomer: async (customer: any) => {
     const response = await fetch(`${BASE_URL}/customers`, {
       method: "POST",
@@ -107,7 +104,7 @@ export const api = {
     return response.json();
   },
 
-  // 🟢 UPDATE CUSTOMER (admin only)
+  // 🟢 UPDATE CUSTOMER
   updateCustomer: async (id: number, customer: any) => {
     const response = await fetch(`${BASE_URL}/customers/${id}`, {
       method: "PUT",
@@ -123,7 +120,7 @@ export const api = {
     return response.json();
   },
 
-  // 🟢 DELETE CUSTOMER (admin only)
+  // 🟢 DELETE SINGLE CUSTOMER
   deleteCustomer: async (id: number) => {
     const response = await fetch(`${BASE_URL}/customers/${id}`, {
       method: "DELETE",
@@ -137,8 +134,39 @@ export const api = {
     return { message: "Customer deleted successfully." };
   },
 
+  // 🟢 UPLOAD CSV
+  uploadCsv: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${BASE_URL}/customers/upload-csv`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      data = await response.text();
+    }
+
+    console.log("📦 CSV Upload Response:", data);
+
+    if (!response.ok) {
+      throw new Error(
+        (typeof data === "object" ? data.message : data) || "Failed to upload CSV"
+      );
+    }
+
+    return typeof data === "object"
+      ? data
+      : { message: data || "Upload successful", success: true };
+  },
+
   // =========================
-  // PASSWORD RESET (optional)
+  // PASSWORD RESET
   // =========================
 
   forgotPassword: async (email: string) => {
