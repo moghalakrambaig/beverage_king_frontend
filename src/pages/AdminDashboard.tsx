@@ -47,8 +47,6 @@ export function AdminDashboard() {
       } catch (err) {
         console.error(err);
         setError("Failed to load customers. Are you logged in?");
-        // Optional: navigate to login after a delay
-        // setTimeout(() => navigate("/login"), 5000);
       } finally {
         setLoading(false);
       }
@@ -69,6 +67,20 @@ export function AdminDashboard() {
     } catch (error) {
       console.error(error);
       alert("Failed to delete customer");
+    }
+  };
+
+  // 🟢 DELETE ALL CUSTOMERS
+  const handleDeleteAll = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL customers?")) return;
+
+    try {
+      await api.deleteAllCustomers(); // ✅ API call
+      setCustomers([]); // ✅ Clear UI instantly
+      alert("All customers deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete all customers");
     }
   };
 
@@ -159,6 +171,12 @@ export function AdminDashboard() {
             <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* 🗑️ DELETE ALL BUTTON */}
+        <Button variant="destructive" onClick={handleDeleteAll}>
+          Delete All
+        </Button>
+
         <Button>Add Customer</Button>
       </div>
 
@@ -199,3 +217,5 @@ export function AdminDashboard() {
     </div>
   );
 }
+
+export default AdminDashboard;

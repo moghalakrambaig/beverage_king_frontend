@@ -133,6 +133,20 @@ export const api = {
     return { message: "Customer deleted successfully." };
   },
 
+  // 🟢 DELETE ALL CUSTOMERS
+  deleteAllCustomers: async () => {
+    const response = await fetch(`${BASE_URL}/customers`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete all customers (${response.status})`);
+    }
+
+    return { message: "All customers deleted successfully." };
+  },
+
   // 🟢 UPLOAD CSV (✅ Fixed)
   uploadCsv: async (file: File) => {
     const formData = new FormData();
