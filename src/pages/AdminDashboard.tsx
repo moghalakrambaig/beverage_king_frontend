@@ -37,11 +37,17 @@ export function AdminDashboard() {
 
       try {
         const data = await api.getCustomers();
-        console.log("Fetched data:", data);
         if (Array.isArray(data)) {
-          setCustomers(data);
+          // Ensure default values to avoid null issues
+          const sanitized = data.map((c: any) => ({
+            ...c,
+            earnedPoints: c.earnedPoints ?? 0,
+            totalVisits: c.totalVisits ?? 0,
+            totalSpend: c.totalSpend ?? 0,
+            isEmployee: c.isEmployee ?? false,
+          }));
+          setCustomers(sanitized);
         } else {
-          console.error("Fetched data is not an array:", data);
           setError("Received invalid data format from server.");
         }
       } catch (err) {
@@ -70,13 +76,12 @@ export function AdminDashboard() {
     }
   };
 
-  // 🟢 DELETE ALL CUSTOMERS
   const handleDeleteAll = async () => {
     if (!window.confirm("Are you sure you want to delete ALL customers?")) return;
 
     try {
-      await api.deleteAllCustomers(); // ✅ API call
-      setCustomers([]); // ✅ Clear UI instantly
+      await api.deleteAllCustomers();
+      setCustomers([]);
       alert("All customers deleted successfully!");
     } catch (error) {
       console.error(error);
@@ -84,10 +89,47 @@ export function AdminDashboard() {
     }
   };
 
+  const formatDate = (dateStr: string | null) => {
+    return dateStr ? new Date(dateStr).toLocaleDateString() : "";
+  };
+
   const handleExportCSV = () => {
     if (!customers.length) return alert("No customers to export");
-    const headers = ["ID", "Name", "Mobile", "Email", "Points"];
-    const rows = customers.map((c) => [c.id, c.cus_name, c.mobile, c.email, c.points]);
+
+    const headers = [
+      "ID",
+      "DisplayID",
+      "Name",
+      "Phone",
+      "Email",
+      "SignUpDate",
+      "EarnedPoints",
+      "TotalVisits",
+      "TotalSpend",
+      "LastPurchaseDate",
+      "IsEmployee",
+      "StartDate",
+      "EndDate",
+      "InternalLoyaltyCustomerId",
+    ];
+
+    const rows = customers.map((c) => [
+      c.id,
+      c.displayId,
+      c.name,
+      c.phone,
+      c.email,
+      formatDate(c.signUpDate),
+      c.earnedPoints,
+      c.totalVisits,
+      c.totalSpend,
+      formatDate(c.lastPurchaseDate),
+      c.isEmployee ? "Yes" : "No",
+      formatDate(c.startDate),
+      formatDate(c.endDate),
+      c.internalLoyaltyCustomerId,
+    ]);
+
     const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "customers.csv");
@@ -95,9 +137,26 @@ export function AdminDashboard() {
 
   const handleExportExcel = () => {
     if (!customers.length) return alert("No customers to export");
+
     const worksheet = XLSX.utils.json_to_sheet(
-      customers.map((c) => ({ ID: c.id, Name: c.cus_name, Mobile: c.mobile, Email: c.email, Points: c.points }))
+      customers.map((c) => ({
+        ID: c.id,
+        DisplayID: c.displayId,
+        Name: c.name,
+        Phone: c.phone,
+        Email: c.email,
+        SignUpDate: formatDate(c.signUpDate),
+        EarnedPoints: c.earnedPoints,
+        TotalVisits: c.totalVisits,
+        TotalSpend: c.totalSpend,
+        LastPurchaseDate: formatDate(c.lastPurchaseDate),
+        IsEmployee: c.isEmployee ? "Yes" : "No",
+        StartDate: formatDate(c.startDate),
+        EndDate: formatDate(c.endDate),
+        InternalLoyaltyCustomerId: c.internalLoyaltyCustomerId,
+      }))
     );
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
@@ -112,7 +171,14 @@ export function AdminDashboard() {
     try {
       const response = await api.uploadCsv(file);
       if (response.data) {
-        setCustomers(response.data);
+        const sanitized = response.data.map((c: any) => ({
+          ...c,
+          earnedPoints: c.earnedPoints ?? 0,
+          totalVisits: c.totalVisits ?? 0,
+          totalSpend: c.totalSpend ?? 0,
+          isEmployee: c.isEmployee ?? false,
+        }));
+        setCustomers(sanitized);
       }
     } catch (error) {
       console.error(error);
@@ -120,7 +186,6 @@ export function AdminDashboard() {
     }
   };
 
-  // Loading State
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen flex-col">
@@ -130,7 +195,6 @@ export function AdminDashboard() {
     );
   }
 
-  // Error State
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen flex-col bg-destructive/10">
@@ -159,6 +223,7 @@ export function AdminDashboard() {
           onChange={handleFileUpload}
         />
         <Button onClick={() => fileInputRef.current?.click()}>Upload File</Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="flex items-center">
@@ -172,7 +237,6 @@ export function AdminDashboard() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* 🗑️ DELETE ALL BUTTON */}
         <Button variant="destructive" onClick={handleDeleteAll}>
           Delete All
         </Button>
@@ -190,10 +254,19 @@ export function AdminDashboard() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>DisplayID</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Mobile</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>SignUpDate</TableHead>
               <TableHead>Points</TableHead>
+              <TableHead>TotalVisits</TableHead>
+              <TableHead>TotalSpend</TableHead>
+              <TableHead>LastPurchaseDate</TableHead>
+              <TableHead>IsEmployee</TableHead>
+              <TableHead>StartDate</TableHead>
+              <TableHead>EndDate</TableHead>
+              <TableHead>InternalLoyaltyCustomerId</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -201,10 +274,19 @@ export function AdminDashboard() {
             {customers.map((customer) => (
               <TableRow key={customer.id}>
                 <TableCell>{customer.id}</TableCell>
-                <TableCell>{customer.cus_name}</TableCell>
-                <TableCell>{customer.mobile}</TableCell>
+                <TableCell>{customer.displayId}</TableCell>
+                <TableCell>{customer.name}</TableCell>
+                <TableCell>{customer.phone}</TableCell>
                 <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.points}</TableCell>
+                <TableCell>{formatDate(customer.signUpDate)}</TableCell>
+                <TableCell>{customer.earnedPoints}</TableCell>
+                <TableCell>{customer.totalVisits}</TableCell>
+                <TableCell>{customer.totalSpend}</TableCell>
+                <TableCell>{formatDate(customer.lastPurchaseDate)}</TableCell>
+                <TableCell>{customer.isEmployee ? "Yes" : "No"}</TableCell>
+                <TableCell>{formatDate(customer.startDate)}</TableCell>
+                <TableCell>{formatDate(customer.endDate)}</TableCell>
+                <TableCell>{customer.internalLoyaltyCustomerId}</TableCell>
                 <TableCell>
                   <Button variant="outline" size="sm" className="mr-2">Update</Button>
                   <Button variant="destructive" size="sm" onClick={() => handleDelete(customer.id)}>Delete</Button>
