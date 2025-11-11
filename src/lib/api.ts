@@ -93,32 +93,59 @@ export const api = {
   },
 
   updateCustomer: async (id: number, customer: any) => {
-    const payload = {
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      password: customer.password,
-      isEmployee: customer.isEmployee || false,
-      displayId: customer.displayId,
-      startDate: customer.startDate,
-      endDate: customer.endDate,
-      earnedPoints: customer.earnedPoints,
-      totalVisits: customer.totalVisits,
-      totalSpend: customer.totalSpend,
-      lastPurchaseDate: customer.lastPurchaseDate,
-      internalLoyaltyCustomerId: customer.internalLoyaltyCustomerId,
-      signUpDate: customer.signUpDate,
-    };
+    // Clean payload: only include non-null / defined fields
+    const payload: any = {};
 
+    // These are editable fields from your UI
+    const allowedFields = [
+      "name",
+      "email",
+      "phone",
+      "password",
+      "isEmployee",
+      "displayId",
+      "startDate",
+      "endDate",
+      "earnedPoints",
+      "totalVisits",
+      "totalSpend",
+      "lastPurchaseDate",
+      "internalLoyaltyCustomerId",
+      "signUpDate",
+      "currentRank",
+    ];
+
+    // Copy only valid fields
+    for (const key of allowedFields) {
+      if (customer[key] !== undefined && customer[key] !== null) {
+        payload[key] = customer[key];
+      }
+    }
+
+    // Send PUT or PATCH request
     const response = await fetch(`${BASE_URL}/customers/${id}`, {
-      method: "PUT",
+      method: "PUT", // change to PATCH if your backend supports partial update
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       credentials: "include",
     });
 
-    if (!response.ok) throw new Error(`Failed to update customer (${response.status})`);
-    return response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      data = await response.text();
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data === "object" ? data.message || "Failed to update customer" : data
+      );
+    }
+
+    return typeof data === "object"
+      ? data
+      : { message: data || "Customer updated successfully", success: true };
   },
 
   deleteCustomer: async (id: number) => {

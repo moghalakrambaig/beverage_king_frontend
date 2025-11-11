@@ -27,6 +27,11 @@ export function AdminDashboard() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Edit modal states
+  const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
       const isLoggedIn = sessionStorage.getItem("email");
@@ -38,7 +43,6 @@ export function AdminDashboard() {
       try {
         const data = await api.getCustomers();
         if (Array.isArray(data)) {
-          // Ensure default values to avoid null issues
           const sanitized = data.map((c: any) => ({
             ...c,
             earnedPoints: c.earnedPoints ?? 0,
@@ -90,9 +94,16 @@ export function AdminDashboard() {
   };
 
   const formatDate = (dateStr: string | null) => {
-    return dateStr ? new Date(dateStr).toLocaleDateString() : "";
+    if (!dateStr) return "";
+    // backend may return ISO dates; show yyyy-mm-dd for form compatibility
+    try {
+      return new Date(dateStr).toISOString().slice(0, 10);
+    } catch {
+      return dateStr;
+    }
   };
 
+  // Export functions (CSV/Excel)
   const handleExportCSV = () => {
     if (!customers.length) return alert("No customers to export");
 
@@ -170,8 +181,10 @@ export function AdminDashboard() {
 
     try {
       const response = await api.uploadCsv(file);
-      if (response.data) {
-        const sanitized = response.data.map((c: any) => ({
+      // depending on backend response shape: either response.data or response itself
+      const data = response.data ?? response;
+      if (Array.isArray(data)) {
+        const sanitized = data.map((c: any) => ({
           ...c,
           earnedPoints: c.earnedPoints ?? 0,
           totalVisits: c.totalVisits ?? 0,
@@ -179,10 +192,74 @@ export function AdminDashboard() {
           isEmployee: c.isEmployee ?? false,
         }));
         setCustomers(sanitized);
+      } else {
+        // If backend returns created rows under data property:
+        const arr = data.data ?? [];
+        if (Array.isArray(arr)) setCustomers(arr);
       }
     } catch (error) {
       console.error(error);
       alert("Failed to upload CSV");
+    }
+  };
+
+  // Open edit modal with a deep copy so table isn't mutated until save
+  const openEditModal = (c: any) => {
+    setEditingCustomer({
+      id: c.id,
+      displayId: c.displayId ?? "",
+      name: c.name ?? "",
+      phone: c.phone ?? "",
+      email: c.email ?? "",
+      signUpDate: formatDate(c.signUpDate) || "",
+      earnedPoints: c.earnedPoints ?? 0,
+      totalVisits: c.totalVisits ?? 0,
+      totalSpend: c.totalSpend ?? 0,
+      lastPurchaseDate: formatDate(c.lastPurchaseDate) || "",
+      isEmployee: !!c.isEmployee,
+      startDate: formatDate(c.startDate) || "",
+      endDate: formatDate(c.endDate) || "",
+      internalLoyaltyCustomerId: c.internalLoyaltyCustomerId ?? "",
+      password: "", // optional
+    });
+    setShowModal(true);
+  };
+
+  const handleUpdateSave = async () => {
+    if (!editingCustomer) return;
+    setSaving(true);
+
+    // Build payload — include all fields your backend expects.
+    const payload = {
+      displayId: editingCustomer.displayId || null,
+      name: editingCustomer.name || null,
+      phone: editingCustomer.phone || null,
+      email: editingCustomer.email || null,
+      signUpDate: editingCustomer.signUpDate || null, // format yyyy-mm-dd
+      earnedPoints: Number(editingCustomer.earnedPoints) || 0,
+      totalVisits: Number(editingCustomer.totalVisits) || 0,
+      totalSpend: Number(editingCustomer.totalSpend) || 0.0,
+      lastPurchaseDate: editingCustomer.lastPurchaseDate || null,
+      isEmployee: !!editingCustomer.isEmployee,
+      startDate: editingCustomer.startDate || null,
+      endDate: editingCustomer.endDate || null,
+      internalLoyaltyCustomerId: editingCustomer.internalLoyaltyCustomerId || null,
+      // send password only if provided
+      ...(editingCustomer.password ? { password: editingCustomer.password } : {}),
+    };
+
+    try {
+      const res = await api.updateCustomer(editingCustomer.id, payload);
+      // backend returns { message, data } or data directly. Normalize:
+      const updated = res.data ?? res;
+      // update table row
+      setCustomers((prev) => prev.map((r) => (r.id === editingCustomer.id ? updated : r)));
+      setShowModal(false);
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Failed to update customer: " + (err.message ?? err));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -288,13 +365,189 @@ export function AdminDashboard() {
                 <TableCell>{formatDate(customer.endDate)}</TableCell>
                 <TableCell>{customer.internalLoyaltyCustomerId}</TableCell>
                 <TableCell>
-                  <Button variant="outline" size="sm" className="mr-2">Update</Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(customer.id)}>Delete</Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditModal(customer)}
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(customer.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {/* Edit Modal */}
+      {/* Edit Modal */}
+      {showModal && editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
+            <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Display ID</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.displayId}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, displayId: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Name</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.name}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Phone</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.phone}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Email</label>
+                <input
+                  type="email"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.email}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Sign Up Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.signUpDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, signUpDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Last Purchase Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.lastPurchaseDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, lastPurchaseDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Earned Points</label>
+                <input
+                  type="number"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.earnedPoints}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, earnedPoints: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Total Visits</label>
+                <input
+                  type="number"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.totalVisits}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, totalVisits: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Total Spend</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.totalSpend}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, totalSpend: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 p-2">
+                <input
+                  type="checkbox"
+                  checked={!!editingCustomer.isEmployee}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, isEmployee: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label className="text-sm text-gray-700">Is Employee</label>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Start Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.startDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, startDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">End Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.endDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, endDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-sm text-gray-600">Internal Loyalty Customer ID</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.internalLoyaltyCustomerId}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, internalLoyaltyCustomerId: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-sm text-gray-600">Password (leave blank to keep current)</label>
+                <input
+                  type="password"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.password}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, password: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                onClick={() => setShowModal(false)}
+                className="bg-yellow-400 text-black hover:bg-yellow-400"
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
