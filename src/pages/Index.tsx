@@ -43,15 +43,23 @@ const Index = () => {
     try {
       const res = await api.signup(username, email, password, mobile);
       const customer = res.data;
+
+      // Save session
       sessionStorage.setItem("user", JSON.stringify(customer));
       setUser(customer);
       setPoints(customer.points || 0);
       setTotalEarned(customer.points || 0);
+
       toast({ title: "Welcome!", description: "Account created successfully." });
+
+      // 👉 Redirect to dashboard AFTER signup
+      navigate(`/customer-dashboard/${customer.id}`);
+
     } catch (err: any) {
       toast({ title: "Sign up failed", description: err.message, variant: "destructive" });
     }
   };
+
 
   // Sign In
   // Sign In

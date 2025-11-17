@@ -90,7 +90,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
 
     try {
       // 🔗 call your backend endpoint
-      const res = await fetch("http://localhost:8083/api/auth/forgot-password", {
+      const res = await fetch("http://localhost:8080/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

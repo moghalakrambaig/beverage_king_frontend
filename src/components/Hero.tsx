@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Crown, Sparkles, Bell } from "lucide-react";
+import { Crown, Sparkles, Bell, Instagram } from "lucide-react";
 import bkLogo from "@/assets/bk-logo.jpg";
 
 interface HeroProps {
@@ -15,6 +15,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
 
       <div className="container relative z-10 px-4 py-20 mx-auto">
         <div className="max-w-4xl mx-auto text-center">
+
           {/* Logo */}
           <div className="mb-8 flex justify-center">
             <img
@@ -23,7 +24,6 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
               className="w-48 h-48 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
-
 
           {/* Main heading */}
           <h1 className="mb-8 text-4xl md:text-6xl font-bold tracking-tight">
@@ -40,8 +40,8 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
 
           {/* VIP Message */}
           <p className="mb-10 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Get exclusive early access to barrel drops, first looks at special releases, and behind-the-scenes updates on what we're working on.
-            This is your VIP pass to everything happening at the crown jewel of spirits.
+            Get exclusive early access to barrel drops, first looks at special releases, and behind-the-scenes updates
+            on what we're working on. This is your VIP pass to everything happening at the crown jewel of spirits.
           </p>
 
           {/* CTA Buttons */}
@@ -67,16 +67,30 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
               <h3 className="text-xl font-semibold mb-2">Exclusive Early Access</h3>
               <p className="text-muted-foreground">Barrel drops before we post it on social</p>
             </div>
+
             <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/50 transition-all">
               <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Special Releases</h3>
               <p className="text-muted-foreground">First looks at limited bottles and rare finds</p>
             </div>
+
             <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/50 transition-all">
               <Bell className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Behind-the-Scenes</h3>
               <p className="text-muted-foreground">Direct updates on what we're working on</p>
             </div>
+          </div>
+          {/* Instagram section */}
+          <div className="mt-8 flex flex-col items-center text-center">
+            <a
+              href="https://www.instagram.com/beverage_king?igsh=bGlmcHp1NWM1NWVi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-lg text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Instagram className="w-6 h-6" />
+              <span>Please visit our Instagram page to get more details</span>
+            </a>
           </div>
         </div>
       </div>
