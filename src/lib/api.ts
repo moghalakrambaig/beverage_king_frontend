@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const api = {
   // =========================
@@ -13,7 +13,7 @@ export const api = {
     phone: string,
     isEmployee: boolean = false
   ) => {
-    const response = await fetch(`${BASE_URL}/customers`, {
+    const response = await fetch(`${BASE_URL}/api/customers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, phone, isEmployee }),
@@ -30,7 +30,7 @@ export const api = {
 
   // 🟢 CUSTOMER LOGIN
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/auth/customer-login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       credentials: "include",
@@ -46,14 +46,14 @@ export const api = {
   },
 
   getCustomers: async () => {
-    const response = await fetch(`${BASE_URL}/customers`, { credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers`, { credentials: "include" });
     if (!response.ok) throw new Error(`Failed to fetch customers (${response.status})`);
     const jsonResponse = await response.json().catch(() => []);
     return jsonResponse.data || jsonResponse;
   },
 
   getCustomerById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/customers/${id}`, { credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers/${id}`, { credentials: "include" });
     if (!response.ok) throw new Error(`Failed to fetch customer (${response.status})`);
     const jsonResponse = await response.json();
     return jsonResponse.data;
@@ -77,7 +77,7 @@ export const api = {
       signUpDate: customer.signUpDate,
     };
 
-    const response = await fetch(`${BASE_URL}/customers`, {
+    const response = await fetch(`${BASE_URL}/api/customers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -123,7 +123,7 @@ export const api = {
     }
 
     // Send PUT or PATCH request
-    const response = await fetch(`${BASE_URL}/customers/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/customers/${id}`, {
       method: "PUT", // change to PATCH if your backend supports partial update
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -149,13 +149,13 @@ export const api = {
   },
 
   deleteCustomer: async (id: number) => {
-    const response = await fetch(`${BASE_URL}/customers/${id}`, { method: "DELETE", credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers/${id}`, { method: "DELETE", credentials: "include" });
     if (!response.ok) throw new Error(`Failed to delete customer (${response.status})`);
     return { message: "Customer deleted successfully." };
   },
 
   deleteAllCustomers: async () => {
-    const response = await fetch(`${BASE_URL}/customers`, { method: "DELETE", credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers`, { method: "DELETE", credentials: "include" });
     if (!response.ok) throw new Error(`Failed to delete all customers (${response.status})`);
     return { message: "All customers deleted successfully." };
   },
@@ -164,7 +164,7 @@ export const api = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${BASE_URL}/customers/upload-csv`, {
+    const response = await fetch(`${BASE_URL}/api/customers/upload-csv`, {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -198,7 +198,7 @@ export const api = {
   // =========================
 
   adminLogin: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/auth/signin`, {
+    const response = await fetch(`${BASE_URL}/api/auth/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       credentials: "include",
@@ -217,7 +217,7 @@ export const api = {
   // =========================
 
   forgotPassword: async (email: string) => {
-    const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -233,7 +233,7 @@ export const api = {
   },
 
   resetPassword: async (token: string, newPassword: string) => {
-    const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+    const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, newPassword }),
