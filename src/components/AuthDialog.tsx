@@ -266,26 +266,28 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                   className="bg-background"
                 />
               </div>
-
-              <div className="space-y-2 relative">
+              <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
-                <Input
-                  id="signup-password"
-                  name="signup-password"
-                  type={showSignUpPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  required
-                  className="bg-background pr-10"
-                />
-                <button
-                  type="button"
-                  aria-label={showSignUpPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center focus:outline-none"
-                >
-                  {showSignUpPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+                <div className="relative flex items-center">
+                  <Input
+                    id="signup-password"
+                    name="signup-password"
+                    type={showSignUpPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    required
+                    className="bg-background pr-10 w-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                    aria-label={showSignUpPassword ? "Hide password" : "Show password"}
+                    className="absolute right-3 flex items-center justify-center h-full"
+                  >
+                    {showSignUpPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
+
 
               <Button
                 type="submit"

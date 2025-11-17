@@ -54,6 +54,7 @@ const Index = () => {
   };
 
   // Sign In
+  // Sign In
   const handleSignIn = async (email: string, password: string) => {
     try {
       const res = await api.login(email, password);
@@ -64,10 +65,14 @@ const Index = () => {
       setPoints(customer.points || 0);
       setTotalEarned(customer.points || 0);
       toast({ title: "Welcome back!", description: "Signed in successfully." });
+
+      // Redirect to customer dashboard
+      navigate(`/customer-dashboard/${customer.id}`);
     } catch (err: any) {
       toast({ title: "Sign in failed", description: err.message || "Invalid credentials", variant: "destructive" });
     }
   };
+
 
   // Sign Out
   const handleSignOut = () => {
@@ -98,9 +103,6 @@ const Index = () => {
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex items-center gap-4">
-            <a href="#discord-section" className="text-muted-foreground hover:text-primary transition-colors">
-              Join Discord
-            </a>
 
             {user ? (
               <>
@@ -131,15 +133,6 @@ const Index = () => {
                 >
                   Sign In
                 </Button>
-                <Link to="/admin">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-2 text-white border-2 border-yellow-400 hover:bg-yellow-400/10 hover:text-white"
-                  >
-                    Admin
-                  </Button>
-                </Link>
               </>
             )}
           </div>
@@ -156,13 +149,6 @@ const Index = () => {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="sm:hidden border-t border-border bg-background/95 backdrop-blur-md p-4 space-y-4 animate-in fade-in slide-in-from-top-4">
-            <a
-              href="#discord-section"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-muted-foreground hover:text-primary transition-colors"
-            >
-              Join Discord
-            </a>
 
             {user ? (
               <>
@@ -199,15 +185,6 @@ const Index = () => {
                 >
                   Sign In
                 </Button>
-                <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full mt-2 text-white border-2 border-yellow-400 hover:bg-yellow-400/10 hover:text-white"
-                  >
-                    Admin
-                  </Button>
-                </Link>
               </>
             )}
           </div>

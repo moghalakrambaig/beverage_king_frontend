@@ -11,6 +11,7 @@ import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import CustomerDetails from "./pages/CustomerDetails";
+import CustomerDashboard from "./pages/CustomerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => {
            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/customer-details/:id" element={<CustomerDetails />} />
+            <Route path="/customer-dashboard/:id" element={<CustomerDashboard />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
