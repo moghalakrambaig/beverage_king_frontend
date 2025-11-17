@@ -102,8 +102,9 @@ const Index = () => {
             <img
               src={bkLogo}
               alt="Beverage King"
-              className="w-12 h-12 object-contain rounded-full shadow-lg transition-transform duration-300 hover:scale-110"
+              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
             />
+
             <span className="text-3xl sm:text-4xl font-bold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
               Beverage King
             </span>
