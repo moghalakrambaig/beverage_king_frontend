@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://beveragekingbackend-production.up.railway.app";
 
 export const api = {
   // =========================
@@ -45,15 +47,61 @@ export const api = {
     return response.json();
   },
 
+  // =========================
+  // PASSWORD RESET
+  // =========================
+
+  /** 🔵 SEND RESET PASSWORD LINK */
+  forgotPassword: async (email: string) => {
+    const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || "Failed to send reset link");
+    }
+
+    return response.json();
+  },
+
+  /** 🔵 RESET PASSWORD USING TOKEN */
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword }),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || "Failed to reset password");
+    }
+
+    return response.json();
+  },
+
+  // =========================
+  // CUSTOMER CRUD
+  // =========================
+
   getCustomers: async () => {
-    const response = await fetch(`${BASE_URL}/api/customers`, { credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers`, {
+      credentials: "include",
+    });
     if (!response.ok) throw new Error(`Failed to fetch customers (${response.status})`);
     const jsonResponse = await response.json().catch(() => []);
     return jsonResponse.data || jsonResponse;
   },
 
   getCustomerById: async (id: string) => {
-    const response = await fetch(`${BASE_URL}/api/customers/${id}`, { credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers/${id}`, {
+      credentials: "include",
+    });
     if (!response.ok) throw new Error(`Failed to fetch customer (${response.status})`);
     const jsonResponse = await response.json();
     return jsonResponse.data;
@@ -93,10 +141,7 @@ export const api = {
   },
 
   updateCustomer: async (id: number, customer: any) => {
-    // Clean payload: only include non-null / defined fields
     const payload: any = {};
-
-    // These are editable fields from your UI
     const allowedFields = [
       "name",
       "email",
@@ -115,16 +160,14 @@ export const api = {
       "currentRank",
     ];
 
-    // Copy only valid fields
     for (const key of allowedFields) {
       if (customer[key] !== undefined && customer[key] !== null) {
         payload[key] = customer[key];
       }
     }
 
-    // Send PUT or PATCH request
     const response = await fetch(`${BASE_URL}/api/customers/${id}`, {
-      method: "PUT", // change to PATCH if your backend supports partial update
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       credentials: "include",
@@ -149,13 +192,19 @@ export const api = {
   },
 
   deleteCustomer: async (id: number) => {
-    const response = await fetch(`${BASE_URL}/api/customers/${id}`, { method: "DELETE", credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (!response.ok) throw new Error(`Failed to delete customer (${response.status})`);
     return { message: "Customer deleted successfully." };
   },
 
   deleteAllCustomers: async () => {
-    const response = await fetch(`${BASE_URL}/api/customers`, { method: "DELETE", credentials: "include" });
+    const response = await fetch(`${BASE_URL}/api/customers`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (!response.ok) throw new Error(`Failed to delete all customers (${response.status})`);
     return { message: "All customers deleted successfully." };
   },
@@ -185,16 +234,13 @@ export const api = {
       );
     }
 
-    // Frontend post-processing: map CSV rows to proper Customer object
-    // (Optional: if you want to process CSV locally before sending)
     return typeof data === "object"
       ? data
       : { message: data || "Upload successful", success: true };
   },
 
-
   // =========================
-  // ADMIN APIs
+  // ADMIN LOGIN
   // =========================
 
   adminLogin: async (email: string, password: string) => {
@@ -210,41 +256,5 @@ export const api = {
     }
 
     return response.json().catch(() => ({ message: "Login successful" }));
-  },
-
-  // =========================
-  // PASSWORD RESET
-  // =========================
-
-  forgotPassword: async (email: string) => {
-    const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.message || "Failed to send reset link");
-    }
-
-    return response.json();
-  },
-
-  resetPassword: async (token: string, newPassword: string) => {
-    const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, newPassword }),
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.message || "Failed to reset password");
-    }
-
-    return response.json();
   },
 };
