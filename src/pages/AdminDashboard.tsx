@@ -109,6 +109,7 @@ export function AdminDashboard() {
 
     const headers = [
       "ID",
+      "CurrentRank",
       "DisplayID",
       "Name",
       "Phone",
@@ -126,6 +127,7 @@ export function AdminDashboard() {
 
     const rows = customers.map((c) => [
       c.id,
+      c.currentRank,
       c.displayId,
       c.name,
       c.phone,
@@ -152,6 +154,7 @@ export function AdminDashboard() {
     const worksheet = XLSX.utils.json_to_sheet(
       customers.map((c) => ({
         ID: c.id,
+        CurrentRank: c.currentRank,
         DisplayID: c.displayId,
         Name: c.name,
         Phone: c.phone,
@@ -207,6 +210,7 @@ export function AdminDashboard() {
   const openEditModal = (c: any) => {
     setEditingCustomer({
       id: c.id,
+      currentRank: c.currentRank ?? "",
       displayId: c.displayId ?? "",
       name: c.name ?? "",
       phone: c.phone ?? "",
@@ -232,6 +236,7 @@ export function AdminDashboard() {
     // Build payload — include all fields your backend expects.
     const payload = {
       displayId: editingCustomer.displayId || null,
+      currentRank: editingCustomer.currentRank || null,
       name: editingCustomer.name || null,
       phone: editingCustomer.phone || null,
       email: editingCustomer.email || null,
@@ -331,6 +336,7 @@ export function AdminDashboard() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>CurrentRank</TableHead>
               <TableHead>DisplayID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Phone</TableHead>
@@ -351,6 +357,7 @@ export function AdminDashboard() {
             {customers.map((customer) => (
               <TableRow key={customer.id}>
                 <TableCell>{customer.id}</TableCell>
+                <TableCell>{customer.currentRank}</TableCell>
                 <TableCell>{customer.displayId}</TableCell>
                 <TableCell>{customer.name}</TableCell>
                 <TableCell>{customer.phone}</TableCell>
@@ -390,13 +397,21 @@ export function AdminDashboard() {
       )}
 
       {/* Edit Modal */}
-      {/* Edit Modal */}
       {showModal && editingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Current Rank</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.currentRank}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, currentRank: e.target.value })}
+                />
+              </div>
+
               <div className="flex flex-col">
                 <label className="text-sm text-gray-600">Display ID</label>
                 <input
