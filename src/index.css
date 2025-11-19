@@ -303,7 +303,15 @@ All colors MUST be HSL.
     background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1514933651103-005eec06a04b');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    /* Use fixed background only on larger screens for performance and layout stability on mobile */
+    background-attachment: scroll;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      background-attachment: fixed;
+    }
   }
 }
 
@@ -322,6 +330,11 @@ html {
   scroll-behavior: smooth;
 }
 
-html {
-  zoom: 0.93;
+/* Remove forced zoom which breaks responsive layouts on small screens */
+
+/* Make images responsive by default */
+img, picture, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }

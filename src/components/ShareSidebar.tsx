@@ -45,17 +45,20 @@ export const ShareSidebar = () => {
   };
 
   return (
-    <div className="fixed right-0 top-1/2 -translate-y-1/2 z-60">
+    <div className="fixed right-0 top-1/2 -translate-y-1/2 z-[9999]">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="default"
-            size="icon"
-            className="h-12 w-12 rounded-l-xl rounded-r-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-          >
-            <Share2 className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
+        {!isOpen && (
+          <SheetTrigger asChild>
+            <Button
+              variant="default"
+              size="icon"
+              className="h-14 w-14 sm:h-12 sm:w-12 rounded-l-xl rounded-r-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg touch-manipulation"
+              aria-label="Share"
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+        )}
         <SheetContent className="w-80 sm:w-96">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-2xl">Share & Connect</SheetTitle>
