@@ -10,8 +10,8 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Decorative background elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(45_100%_60%/0.1),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(280_40%_20%/0.3),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.1),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--secondary)/0.3),transparent)]" />
 
       <div className="container relative z-10 px-4 py-20 mx-auto">
         <div className="max-w-4xl mx-auto text-center">
@@ -49,7 +49,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
             <Button
               onClick={onGetStarted}
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-5 text-base rounded-xl shadow-[0_0_30px_hsl(45_100%_60%/0.3)] hover:shadow-[0_0_40px_hsl(45_100%_60%/0.4)] transition-all"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-5 text-base rounded-xl shadow-[0_0_30px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.4)] transition-all"
             >
               Join the Insiders Club
             </Button>
@@ -57,7 +57,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
 
           {/* Sign Up Instructions */}
           <p className="text-base text-muted-foreground">
-            Ask the cashier how to sign up, or simply join during checkout!
+            Want in? Just ask the cashier or sign up while checking out!
           </p>
 
           {/* Feature highlights */}
@@ -86,10 +86,10 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
               href="https://www.instagram.com/beverage_king?igsh=bGlmcHp1NWM1NWVi"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-lg text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-lg text-muted-foreground hover:text-primary transition-.colors"
             >
               <Instagram className="w-6 h-6" />
-              <span>Please visit our Instagram page to get more details</span>
+              <span>Follow us on Instagram for all the latest details!</span>
             </a>
           </div>
         </div>

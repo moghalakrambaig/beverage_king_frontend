@@ -33,10 +33,26 @@ const CustomerDashboard = () => {
 
         // Example: Fetch exclusive deals (replace with real API if exists)
         const dealsRes = [
-          { id: 1, title: "10% Off on Beverages", description: "Enjoy a special 10% discount on all beverages this week!", discount: "10%" },
-          { id: 2, title: "Buy 1 Get 1 Free", description: "Buy one beverage and get another free.", discount: "B1G1" },
-          { id: 3, title: "Free Delivery", description: "Get free delivery on orders above $50.", discount: "Free Delivery" }
-        ];
+  { 
+    id: 1, 
+    title: "Bourbon Bliss 10% Off", 
+    description: "Savor your favorite bourbons with a 10% discount this week only!", 
+    discount: "10%" 
+  },
+  { 
+    id: 2, 
+    title: "Double Barrel Offer", 
+    description: "Buy a bottle of select bourbon and get a second one on the house.", 
+    discount: "B1G1" 
+  },
+  { 
+    id: 3, 
+    title: "Smooth Delivery", 
+    description: "Get free shipping on bourbon orders above $100 – enjoy the pour at home!", 
+    discount: "Free Delivery" 
+  }
+];
+
         setDeals(dealsRes);
       } catch (err) {
         console.error(err);

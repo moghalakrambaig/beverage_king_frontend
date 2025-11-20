@@ -239,7 +239,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name (Optional)</Label>
+                <Label htmlFor="full-name">Full Name</Label>
                 <Input id="full-name" name="full-name" type="text" placeholder="John Doe" className="bg-background" />
               </div>
 
