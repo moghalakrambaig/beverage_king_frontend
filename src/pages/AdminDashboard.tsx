@@ -322,8 +322,6 @@ export function AdminDashboard() {
         <Button variant="destructive" onClick={handleDeleteAll}>
           Delete All
         </Button>
-
-        <Button>Add Customer</Button>
       </div>
 
       {customers.length === 0 ? (
