@@ -290,7 +290,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-lg">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <Button onClick={handleLogout}>Logout</Button>
@@ -396,7 +396,7 @@ export function AdminDashboard() {
 
       {/* Edit Modal */}
       {showModal && editingCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
