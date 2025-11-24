@@ -149,7 +149,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                   id="signin-email"
                   name="signin-email"
                   type="email"
-                  placeholder="you@example.com"
+                  
                   required
                   className="bg-background"
                 />
@@ -162,7 +162,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                     id="signin-password"
                     name="signin-password"
                     type={showSignInPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                   
                     required
                     className="bg-background pr-10 w-full"
                   />
@@ -215,7 +215,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                         id="forgot-email"
                         name="forgot-email"
                         type="email"
-                        placeholder="you@example.com"
+                        
                         required
                         className="bg-background"
                       />
@@ -240,7 +240,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" name="full-name" type="text" placeholder="John Doe" className="bg-background" />
+                <Input id="full-name" name="full-name" type="text" className="bg-background" />
               </div>
 
               <div className="space-y-2">
@@ -249,7 +249,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                   id="signup-email"
                   name="signup-email"
                   type="email"
-                  placeholder="you@example.com"
+                  
                   required
                   className="bg-background"
                 />
@@ -261,7 +261,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                   id="signup-mobile"
                   name="signup-mobile"
                   type="tel"
-                  placeholder="e.g. 9876543210"
+                 
                   required
                   className="bg-background"
                 />
@@ -273,7 +273,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                     id="signup-password"
                     name="signup-password"
                     type={showSignUpPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    
                     required
                     className="bg-background pr-10 w-full"
                   />

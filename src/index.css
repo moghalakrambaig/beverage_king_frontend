@@ -96,6 +96,9 @@ All colors MUST be HSL.
   justify-content: center;
   min-height: 100vh;
   padding: 1rem;
+  /* vibrant backdrop for loader */
+  background: radial-gradient(1200px 600px at 10% 20%, hsl(var(--primary) / 0.08), transparent 20%),
+              radial-gradient(1000px 500px at 90% 80%, hsl(var(--accent) / 0.06), transparent 18%);
 }
 
 .loading-content {
@@ -112,43 +115,42 @@ All colors MUST be HSL.
   height: 160px;
   border-radius: 18px 18px 34px 34px;
   overflow: hidden;
-  background: linear-gradient(180deg, hsl(var(--background) / 0.06), hsl(var(--background) / 0.02));
-  box-shadow: 
-    0 8px 30px hsl(var(--primary) / 0.12),
-    inset 0 6px 18px hsl(var(--primary) / 0.06);
-  border: 1px solid hsl(var(--primary) / 0.18);
-  transform: perspective(600px) rotateX(6deg) translateZ(0);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow:
+    0 20px 60px hsl(var(--primary) / 0.14),
+    inset 0 12px 30px hsl(var(--primary) / 0.06);
+  border-radius: 22px 22px 40px 40px;
+  transform: perspective(700px) rotateX(8deg) translateZ(0);
   will-change: transform;
+  /* colorful rim */
+  border: none;
 }
 
 .loading-glass::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(
-    to bottom,
-    hsl(var(--primary) / 0.2),
-    hsl(var(--primary) / 0)
-  );
-  filter: blur(2px);
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(120deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
 }
-
+ 
 .loading-glass::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 10px;
-  width: 20px;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    hsl(var(--primary) / 0.2),
-    hsl(var(--primary) / 0)
-  );
-  filter: blur(4px);
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  height: 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.05));
+  filter: blur(6px);
+  opacity: 0.85;
+  transform: translateY(-4px);
 }
 
 .loading-liquid {
@@ -157,14 +159,20 @@ All colors MUST be HSL.
   left: 0;
   right: 0;
   background: linear-gradient(180deg,
-    hsl(var(--primary) / 0.95) 0%,
-    hsl(var(--accent) / 0.9) 50%,
-    hsl(var(--accent) / 0.85) 100%
+    hsl(var(--primary) / 0.98) 0%,
+    hsl(var(--accent) / 0.88) 45%,
+    hsl(calc(var(--accent) - 20) / 0.85) 100%
   );
-  filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.3));
-  animation: fill-glass 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  filter: drop-shadow(0 0 18px hsl(var(--primary) / 0.35));
+  animation: fill-glass 2.8s cubic-bezier(0.2, 0.9, 0.2, 1) forwards, liquid-shimmer 2.5s linear infinite;
   transform-origin: 50% 100%;
   will-change: transform, height;
+}
+
+@keyframes liquid-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Droplets that spill out */
@@ -172,13 +180,13 @@ All colors MUST be HSL.
 
 .bubble {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  /* dark shaded bubble to match previous design */
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 12%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0.85) 60%);
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
+  /* colorful, bright bubbles */
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 10%, hsl(var(--accent) / 0.95) 35%, hsl(var(--primary) / 0.85) 70%);
   animation: bubble 3s cubic-bezier(0.22, 0.9, 0.28, 1) infinite;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset -2px -2px 4px rgba(255,255,255,0.08);
+  box-shadow: 0 6px 18px hsl(var(--accent) / 0.18), 0 2px 6px rgba(0,0,0,0.25) inset;
   transform-origin: center bottom;
 }
 

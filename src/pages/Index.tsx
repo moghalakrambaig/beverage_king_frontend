@@ -101,11 +101,11 @@ const Index = () => {
           <Link to="/" className="flex items-center gap-3">
             <img
               src={bkLogo}
-              alt="Beverage King"
+              alt="BEVERAGE KING"
               className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
             />
 
-            <span className="text-3xl sm:text-4xl font-bold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+            <span className="text-3xl sm:text-4xl font-extrabold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
               Beverage King
             </span>
           </Link>
@@ -212,7 +212,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center text-muted-foreground">
-          <p>© 2024 Beverage King. All rights reserved.</p>
+          <p>© 2025 Beverage King. All rights reserved.</p>
         </div>
       </footer>
 
