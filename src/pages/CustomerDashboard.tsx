@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
 interface Customer {
-  id: number;
+  id: string;
   name: string;
   email: string;
   earnedPoints: number;

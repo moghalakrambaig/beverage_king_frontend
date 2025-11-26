@@ -22,14 +22,15 @@ import { ChevronDown, AlertCircle, Loader } from "lucide-react";
 
 export function AdminDashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -41,16 +42,10 @@ export function AdminDashboard() {
       try {
         const data = await api.getCustomers();
         if (Array.isArray(data)) {
-          const sanitized = data.map((c: any) => ({
-            ...c,
-            earnedPoints: c.earnedPoints ?? 0,
-            totalVisits: c.totalVisits ?? 0,
-            totalSpend: c.totalSpend ?? 0,
-            isEmployee: c.isEmployee ?? false,
-          }));
-          setCustomers(sanitized);
+          setCustomers(data);
+          if (data.length > 0) setColumns(Object.keys(data[0]));
         } else {
-          setError("Received invalid data format from server.");
+          setError("Invalid data format from server.");
         }
       } catch (err) {
         console.error(err);
@@ -67,12 +62,32 @@ export function AdminDashboard() {
     navigate("/login");
   };
 
-  const handleDelete = async (id: number) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const response = await api.uploadCsv(file);
+      const data = response.data ?? response;
+      if (Array.isArray(data) && data.length > 0) {
+        setCustomers(data);
+        setColumns(Object.keys(data[0]));
+      } else {
+        setCustomers([]);
+        setColumns([]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload CSV");
+    }
+  };
+
+  const handleDelete = async (id: any) => {
+    if (!id) return;
     try {
       await api.deleteCustomer(id);
-      setCustomers(customers.filter((c) => c.id !== id));
-    } catch (error) {
-      console.error(error);
+      setCustomers(customers.filter((c) => c._id !== id && c.id !== id));
+    } catch (err) {
+      console.error(err);
       alert("Failed to delete customer");
     }
   };
@@ -82,84 +97,25 @@ export function AdminDashboard() {
     try {
       await api.deleteAllCustomers();
       setCustomers([]);
+      setColumns([]);
       alert("All customers deleted successfully!");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       alert("Failed to delete all customers");
     }
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    try {
-      return new Date(dateStr).toISOString().slice(0, 10);
-    } catch {
-      return dateStr;
-    }
-  };
-
   const handleExportCSV = () => {
-    if (!customers.length) return alert("No customers to export");
-    const headers = [
-      "ID",
-      "CurrentRank",
-      "DisplayID",
-      "Name",
-      "Phone",
-      "Email",
-      "SignUpDate",
-      "EarnedPoints",
-      "TotalVisits",
-      "TotalSpend",
-      "LastPurchaseDate",
-      "IsEmployee",
-      "StartDate",
-      "EndDate",
-      "InternalLoyaltyCustomerId",
-    ];
-    const rows = customers.map((c) => [
-      c.id,
-      c.currentRank,
-      c.displayId,
-      c.name,
-      c.phone,
-      c.email,
-      formatDate(c.signUpDate),
-      c.earnedPoints,
-      c.totalVisits,
-      c.totalSpend,
-      formatDate(c.lastPurchaseDate),
-      c.isEmployee ? "Yes" : "No",
-      formatDate(c.startDate),
-      formatDate(c.endDate),
-      c.internalLoyaltyCustomerId,
-    ]);
-    const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
+    if (!customers.length || !columns.length) return alert("No data to export");
+    const rows = customers.map((c) => columns.map((col) => c[col] ?? ""));
+    const csvContent = [columns, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "customers.csv");
   };
 
   const handleExportExcel = () => {
-    if (!customers.length) return alert("No customers to export");
-    const worksheet = XLSX.utils.json_to_sheet(
-      customers.map((c) => ({
-        ID: c.id,
-        CurrentRank: c.currentRank,
-        DisplayID: c.displayId,
-        Name: c.name,
-        Phone: c.phone,
-        Email: c.email,
-        SignUpDate: formatDate(c.signUpDate),
-        EarnedPoints: c.earnedPoints,
-        TotalVisits: c.totalVisits,
-        TotalSpend: c.totalSpend,
-        LastPurchaseDate: formatDate(c.lastPurchaseDate),
-        IsEmployee: c.isEmployee ? "Yes" : "No",
-        StartDate: formatDate(c.startDate),
-        EndDate: formatDate(c.endDate),
-        InternalLoyaltyCustomerId: c.internalLoyaltyCustomerId,
-      }))
-    );
+    if (!customers.length || !columns.length) return alert("No data to export");
+    const worksheet = XLSX.utils.json_to_sheet(customers);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
@@ -167,81 +123,28 @@ export function AdminDashboard() {
     saveAs(blob, "customers.xlsx");
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const response = await api.uploadCsv(file);
-      const data = response.data ?? response;
-      if (Array.isArray(data)) {
-        const sanitized = data.map((c: any) => ({
-          ...c,
-          earnedPoints: c.earnedPoints ?? 0,
-          totalVisits: c.totalVisits ?? 0,
-          totalSpend: c.totalSpend ?? 0,
-          isEmployee: c.isEmployee ?? false,
-        }));
-        setCustomers(sanitized);
-      } else {
-        const arr = data.data ?? [];
-        if (Array.isArray(arr)) setCustomers(arr);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to upload CSV");
-    }
-  };
-
   const openEditModal = (c: any) => {
-    setEditingCustomer({
-      id: c.id,
-      currentRank: c.currentRank ?? "",
-      displayId: c.displayId ?? "",
-      name: c.name ?? "",
-      phone: c.phone ?? "",
-      email: c.email ?? "",
-      signUpDate: formatDate(c.signUpDate) || "",
-      earnedPoints: c.earnedPoints ?? 0,
-      totalVisits: c.totalVisits ?? 0,
-      totalSpend: c.totalSpend ?? 0,
-      lastPurchaseDate: formatDate(c.lastPurchaseDate) || "",
-      isEmployee: !!c.isEmployee,
-      startDate: formatDate(c.startDate) || "",
-      endDate: formatDate(c.endDate) || "",
-      internalLoyaltyCustomerId: c.internalLoyaltyCustomerId ?? "",
-      password: "",
-    });
+    setEditingCustomer(c);
     setShowModal(true);
   };
 
   const handleUpdateSave = async () => {
     if (!editingCustomer) return;
     setSaving(true);
-    const payload = {
-      displayId: editingCustomer.displayId || null,
-      currentRank: editingCustomer.currentRank || null,
-      name: editingCustomer.name || null,
-      phone: editingCustomer.phone || null,
-      email: editingCustomer.email || null,
-      signUpDate: editingCustomer.signUpDate || null,
-      earnedPoints: Number(editingCustomer.earnedPoints) || 0,
-      totalVisits: Number(editingCustomer.totalVisits) || 0,
-      totalSpend: Number(editingCustomer.totalSpend) || 0.0,
-      lastPurchaseDate: editingCustomer.lastPurchaseDate || null,
-      isEmployee: !!editingCustomer.isEmployee,
-      startDate: editingCustomer.startDate || null,
-      endDate: editingCustomer.endDate || null,
-      internalLoyaltyCustomerId: editingCustomer.internalLoyaltyCustomerId || null,
-      ...(editingCustomer.password ? { password: editingCustomer.password } : {}),
-    };
+
+    const id = editingCustomer._id ?? editingCustomer.id;
+    if (!id) return alert("No id to update this document");
+
     try {
-      const res = await api.updateCustomer(editingCustomer.id, payload);
+      const res = await api.updateCustomer(id, editingCustomer);
       const updated = res.data ?? res;
-      setCustomers((prev) => prev.map((r) => (r.id === editingCustomer.id ? updated : r)));
+      setCustomers((prev) =>
+        prev.map((r) => (r._id === id || r.id === id ? updated : r))
+      );
       setShowModal(false);
     } catch (err) {
-      console.error("Update failed:", err);
-      alert("Failed to update customer: " + (err.message ?? err));
+      console.error(err);
+      alert("Failed to update customer");
     } finally {
       setSaving(false);
     }
@@ -310,42 +213,18 @@ export function AdminDashboard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>CurrentRank</TableHead>
-              <TableHead>DisplayID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>SignUpDate</TableHead>
-              <TableHead>Points</TableHead>
-              <TableHead>TotalVisits</TableHead>
-              <TableHead>TotalSpend</TableHead>
-              <TableHead>LastPurchaseDate</TableHead>
-              <TableHead>IsEmployee</TableHead>
-              <TableHead>StartDate</TableHead>
-              <TableHead>EndDate</TableHead>
-              <TableHead>InternalLoyaltyCustomerId</TableHead>
+              {columns.map((col) => (
+                <TableHead key={col}>{col}</TableHead>
+              ))}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer) => (
-              <TableRow key={customer.id}>
-                <TableCell>{customer.id}</TableCell>
-                <TableCell>{customer.currentRank}</TableCell>
-                <TableCell>{customer.displayId}</TableCell>
-                <TableCell>{customer.name}</TableCell>
-                <TableCell>{customer.phone}</TableCell>
-                <TableCell>{customer.email}</TableCell>
-                <TableCell>{formatDate(customer.signUpDate)}</TableCell>
-                <TableCell>{customer.earnedPoints}</TableCell>
-                <TableCell>{customer.totalVisits}</TableCell>
-                <TableCell>{customer.totalSpend}</TableCell>
-                <TableCell>{formatDate(customer.lastPurchaseDate)}</TableCell>
-                <TableCell>{customer.isEmployee ? "Yes" : "No"}</TableCell>
-                <TableCell>{formatDate(customer.startDate)}</TableCell>
-                <TableCell>{formatDate(customer.endDate)}</TableCell>
-                <TableCell>{customer.internalLoyaltyCustomerId}</TableCell>
+            {customers.map((customer, idx) => (
+              <TableRow key={idx}>
+                {columns.map((col) => (
+                  <TableCell key={col}>{customer[col]?.toString() ?? ""}</TableCell>
+                ))}
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button
@@ -358,7 +237,7 @@ export function AdminDashboard() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDelete(customer.id)}
+                      onClick={() => handleDelete(customer._id ?? customer.id)}
                     >
                       Delete
                     </Button>
@@ -373,54 +252,34 @@ export function AdminDashboard() {
       {/* Edit Modal */}
       {showModal && editingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
+          <div className="w-full max-w-3xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/** Modal inputs repeated for all fields like your original code **/}
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-600">Current Rank</label>
-                <input
-                  className="p-2 rounded border border-gray-300 text-gray-900"
-                  value={editingCustomer.currentRank}
-                  onChange={(e) =>
-                    setEditingCustomer({ ...editingCustomer, currentRank: e.target.value })
-                  }
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-600">Display ID</label>
-                <input
-                  className="p-2 rounded border border-gray-300 text-gray-900"
-                  value={editingCustomer.displayId}
-                  onChange={(e) =>
-                    setEditingCustomer({ ...editingCustomer, displayId: e.target.value })
-                  }
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm text-gray-600">Name</label>
-                <input
-                  className="p-2 rounded border border-gray-300 text-gray-900"
-                  value={editingCustomer.name}
-                  onChange={(e) =>
-                    setEditingCustomer({ ...editingCustomer, name: e.target.value })
-                  }
-                />
-              </div>
-              {/** Continue all remaining modal fields here exactly as your original code **/}
+              {columns.map((col) => (
+                <div className="flex flex-col" key={col}>
+                  <label className="text-sm text-gray-600">{col}</label>
+                  <input
+                    className="p-2 rounded border border-gray-300 text-gray-900"
+                    value={editingCustomer[col] ?? ""}
+                    onChange={(e) =>
+                      setEditingCustomer({ ...editingCustomer, [col]: e.target.value })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <Button
-                  onClick={() => setShowModal(false)}
-                  className="bg-yellow-400 text-black hover:bg-yellow-400"
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleUpdateSave} disabled={saving}>
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                onClick={() => setShowModal(false)}
+                className="bg-yellow-400 text-black hover:bg-yellow-400"
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
             </div>
           </div>
         </div>

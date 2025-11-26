@@ -161,6 +161,7 @@ export const api = {
   },
 
   uploadCsv: async (file: File) => {
+  try {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -170,6 +171,7 @@ export const api = {
       credentials: "include",
     });
 
+    // Try to parse JSON, fallback to text
     let data: any;
     try {
       data = await response.json();
@@ -185,13 +187,34 @@ export const api = {
       );
     }
 
-    // Frontend post-processing: map CSV rows to proper Customer object
-    // (Optional: if you want to process CSV locally before sending)
-    return typeof data === "object"
-      ? data
-      : { message: data || "Upload successful", success: true };
-  },
+    // Dynamic mapping: simply return the array of objects
+    // Each object will have keys as CSV headers and values as cell data
+    if (Array.isArray(data)) {
+      // Optional: normalize keys or convert string dates to Date objects
+      return data.map((row: Record<string, any>) => {
+        const normalized: Record<string, any> = {};
+        for (const key in row) {
+          let value = row[key];
 
+          // Convert ISO strings to Date objects if applicable
+          if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+            value = new Date(value);
+          }
+
+          normalized[key] = value;
+        }
+        return normalized;
+      });
+    }
+
+    // If not array, just return raw response
+    return data;
+
+  } catch (err: any) {
+    console.error("❌ CSV Upload Error:", err);
+    throw new Error(err.message || "Failed to upload CSV dynamically");
+  }
+},
 
   // =========================
   // ADMIN APIs
