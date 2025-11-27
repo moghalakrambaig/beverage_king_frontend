@@ -3,49 +3,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// We only keep a single sign-in flow, remove signup tab
 import { useToast } from "@/hooks/use-toast";
 import { Wine, Eye, EyeOff } from "lucide-react";
 
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSignUp?: (username: string, email: string, password: string, mobile: string) => Promise<void>;
   onSignIn?: (email: string, password: string) => Promise<void>;
 }
 
-export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialogProps) => {
+export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const { toast } = useToast();
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("signup-email") as string;
-    const password = formData.get("signup-password") as string;
-    const username = formData.get("full-name") as string;
-    const mobile = formData.get("signup-mobile") as string;
-
-    if (!email || !password || !mobile) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (onSignUp) await onSignUp(username, email, password, mobile);
-      toast({ title: "Success", description: "Account created successfully!" });
-      onOpenChange(false);
-    } catch (err: any) {
-      toast({ title: "Sign Up Failed", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Sign-up removed; this dialog only handles sign-in now
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,21 +100,13 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
               <Wine className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <DialogTitle className="text-2xl text-center">Join the Insiders Club</DialogTitle>
+          <DialogTitle className="text-2xl text-center">Sign in to your account</DialogTitle>
           <DialogDescription className="text-center">
-            Get exclusive early access to barrel drops and special releases
+            Enter your email and password to access the Insiders Club
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-
-          {/* SIGN IN TAB */}
-          {/* SIGN IN TAB */}
-          <TabsContent value="signin">
+        <div className="w-full">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
@@ -232,73 +197,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignUp, onSignIn }: AuthDialo
                 </DialogContent>
               </Dialog>
             )}
-          </TabsContent>
-
-
-          {/* SIGN UP TAB */}
-          <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" name="full-name" type="text" className="bg-background" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  name="signup-email"
-                  type="email"
-                  
-                  required
-                  className="bg-background"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-mobile">Mobile Number</Label>
-                <Input
-                  id="signup-mobile"
-                  name="signup-mobile"
-                  type="tel"
-                 
-                  required
-                  className="bg-background"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
-                <div className="relative flex items-center">
-                  <Input
-                    id="signup-password"
-                    name="signup-password"
-                    type={showSignUpPassword ? "text" : "password"}
-                    
-                    required
-                    className="bg-background pr-10 w-full"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                    aria-label={showSignUpPassword ? "Hide password" : "Show password"}
-                    className="absolute right-3 flex items-center justify-center h-full"
-                  >
-                    {showSignUpPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={loading}
-              >
-                {loading ? "Creating account..." : "Create Account"}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Hero } from "@/components/Hero";
 import { DiscordSection } from "@/components/DiscordSection";
 import { AuthDialog } from "@/components/AuthDialog";
-import { ShareSidebar } from "@/components/ShareSidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, User as UserIcon, Menu, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -38,27 +37,7 @@ const Index = () => {
     }
   }, []);
 
-  // Sign Up
-  const handleSignUp = async (username: string, email: string, password: string, mobile: string) => {
-    try {
-      const res = await api.signup(username, email, password, mobile);
-      const customer = res.data;
-
-      // Save session
-      sessionStorage.setItem("user", JSON.stringify(customer));
-      setUser(customer);
-      setPoints(customer.points || 0);
-      setTotalEarned(customer.points || 0);
-
-      toast({ title: "Welcome!", description: "Account created successfully." });
-
-      // 👉 Redirect to dashboard AFTER signup
-      navigate(`/customer-dashboard/${customer.id}`);
-
-    } catch (err: any) {
-      toast({ title: "Sign up failed", description: err.message, variant: "destructive" });
-    }
-  };
+  // Sign-up removed from UI — sign-in remains
 
 
   // Sign In
@@ -98,17 +77,22 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img
-              src={bkLogo}
-              alt="BEVERAGE KING"
-              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
-            />
+          <Link to="/" className="flex items-baseline gap-3">
+  <img
+    src={bkLogo}
+    alt="BEVERAGE KING"
+    className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
+  />
 
-            <span className="text-3xl sm:text-4xl font-extrabold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
-              Beverage King
-            </span>
-          </Link>
+  <span className="relative" style={{ top: "-4px" }}>
+    <span className="text-3xl sm:text-4xl font-extrabold font-cursive
+      bg-gradient-to-r from-primary via-accent to-primary bg-clip-text
+      text-transparent animate-gradient leading-none">
+      Beverage King
+    </span>
+  </span>
+</Link>
+
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex items-center gap-4">
@@ -228,7 +212,7 @@ const Index = () => {
         <div id="discord-section">
           <DiscordSection />
         </div>
-        <ShareSidebar />
+        {/* Share sidebar removed per request */}
       </main>
 
       {/* Footer */}
@@ -242,7 +226,6 @@ const Index = () => {
       <AuthDialog
         open={authDialogOpen}
         onOpenChange={setAuthDialogOpen}
-        onSignUp={handleSignUp}
         onSignIn={handleSignIn}
       />
     </div>
