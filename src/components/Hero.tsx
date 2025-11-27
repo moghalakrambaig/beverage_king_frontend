@@ -48,7 +48,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
 {/* Pre-registration form section */}
         <div className="mt-12 flex flex-col items-center text-center">
           <p className="mb-4 text-lg font-semibold text-foreground">
-            Please complete our pre-registration form before signing up.
+            Please Complete IOur Pre-Registration Form Before Signing Up.
           </p>
           <a
             href="https://docs.google.com/forms/d/1a_ULcBtE65z9YqTBD0HqXLEHN6nTcsiU5aqqSPErv2s/viewform"
@@ -59,7 +59,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
             Pre-Registration Form
           </a>
         </div>
-        
+
           {/* Feature highlights */}
 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-16">
 
