@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { api } from "@/lib/api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ChevronDown, AlertCircle, Loader, LogOut, Upload, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ChevronDown, AlertCircle, Loader, LogOut, Upload, Download, MoreVertical } from "lucide-react";
 import bkLogo from "@/assets/bk-logo.jpg";
 
 // utility to format ISO / Date string
@@ -161,14 +161,15 @@ export function AdminDashboard() {
       <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-b p-4 flex justify-between items-center z-50">
         <div className="flex items-center gap-3">
           <img src={bkLogo} alt="BEVERAGE KING" className="w-12 h-12 object-contain rounded-lg" />
-          <span className="text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
+          <span className="text-xl sm:text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
         </div>
 
         {/* Right controls: upload / export / delete all + logout */}
         <div className="flex items-center gap-3">
           <input type="file" accept=".csv,.xlsx" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
 
-          <div className="flex items-center gap-2">
+          {/* Desktop controls: show on small screens and up */}
+          <div className="hidden sm:flex items-center gap-2">
             <Button onClick={() => fileInputRef.current?.click()} size="sm"><Upload className="w-4 h-4 mr-1" /> Upload</Button>
 
             <DropdownMenu>
@@ -184,7 +185,29 @@ export function AdminDashboard() {
             <Button size="sm" variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
           </div>
 
-          <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+          {/* Mobile: compact menu with all actions */}
+          <div className="sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" aria-label="Open menu"><MoreVertical className="w-5 h-5" /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>Upload File</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDeleteAll}>Delete All</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* visible on all sizes in addition to the compact mobile menu (keeps Logout easy to see on larger screens) */}
+          <div className="hidden sm:block">
+            <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+          </div>
         </div>
       </header>
 
