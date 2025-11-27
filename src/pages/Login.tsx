@@ -34,31 +34,31 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 via-yellow-100 to-yellow-50">
-      <div className="absolute inset-0 bg-yellow-50 bg-[url('/pattern.svg')] opacity-10 pointer-events-none"></div>
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5 pointer-events-none"></div>
 
-      <div className="relative w-full max-w-md p-10 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-yellow-200">
+      <div className="relative w-full max-w-md p-10 bg-card/90 backdrop-blur-md rounded-3xl shadow-2xl border border-border">
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-yellow-800 hover:text-yellow-900 transition text-xl"
+          className="absolute top-4 right-4 text-primary hover:text-primary/90 transition text-xl"
         >
           ✕
         </button>
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-yellow-800 drop-shadow-sm">
+          <h2 className="text-3xl font-extrabold text-primary drop-shadow-sm">
             Admin Login
           </h2>
-          <div className="mt-3 h-1 w-20 bg-yellow-400 rounded-full mx-auto shadow-sm"></div>
+          <div className="mt-3 h-1 w-20 bg-primary/60 rounded-full mx-auto shadow-sm"></div>
         </div>
 
         {/* Form */}
         <div className="space-y-6">
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="font-medium text-yellow-700">
+            <Label htmlFor="email" className="font-medium text-muted-foreground">
               Email
             </Label>
             <Input
@@ -67,13 +67,13 @@ export function LoginPage() {
               placeholder="admin@beverageking.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500 rounded-xl shadow-sm placeholder-yellow-400 hover:border-yellow-400 transition"
+              className="mt-2 w-full border-border focus:ring-primary focus:border-primary rounded-xl shadow-sm placeholder:text-muted-foreground hover:border-border transition"
             />
           </div>
 
           {/* Password */}
           <div>
-            <Label htmlFor="password" className="font-medium text-yellow-700">
+            <Label htmlFor="password" className="font-medium text-muted-foreground">
               Password
             </Label>
             <div className="relative mt-2">
@@ -83,13 +83,13 @@ export function LoginPage() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500 rounded-xl shadow-sm pr-10 placeholder-yellow-400 hover:border-yellow-400 transition"
+                className="w-full border-border focus:ring-primary focus:border-primary rounded-xl shadow-sm pr-10 placeholder:text-muted-foreground hover:border-border transition"
               />
               {/* 👁 Show/Hide password icon inside input */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-yellow-600 hover:text-yellow-800 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/80 hover:text-primary transition"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -111,14 +111,14 @@ export function LoginPage() {
         {/* Login Button */}
         <Button
           onClick={handleLogin}
-          className="w-full mt-8 py-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 font-semibold rounded-xl shadow-lg hover:from-yellow-500 hover:to-yellow-700 active:scale-95 transition-all"
+          className="w-full mt-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-lg active:scale-95 transition-all"
           disabled={loading}
         >
           {loading ? "Logging in..." : "Login"}
         </Button>
 
         {/* Optional footer text */}
-        <p className="mt-6 text-center text-yellow-600 text-sm">
+        <p className="mt-6 text-center text-muted-foreground text-sm">
           Forgot your password?{" "}
           <button
             onClick={() => navigate("/forgot-password")}
