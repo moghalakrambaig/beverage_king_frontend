@@ -1,246 +1,256 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { api } from "@/lib/api";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ChevronDown, AlertCircle, Loader, LogOut, Upload, Download } from "lucide-react";
+import bkLogo from "@/assets/bk-logo.jpg";
 
-import {api} from "@/lib/api.ts";
+// utility to format ISO / Date string
+const formatDate = (date: string | Date) => {
+  if (!date) return "-";
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString();
+};
 
-const AdminDashboard = () => {
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+export function AdminDashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const [error, setError] = useState<string | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // =============================
-  // FETCH CUSTOMERS ON LOAD
-  // =============================
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  // ========================== Load customers
   useEffect(() => {
-    const loadData = async () => {
-      const logged = sessionStorage.getItem("email");
-      if (!logged) {
-        navigate("/login");
-        return;
-      }
+    const fetchData = async () => {
+      const email = sessionStorage.getItem("email");
+      if (!email) return navigate("/login");
 
       try {
         const data = await api.getCustomers();
+        setCustomers(data);
 
-        if (Array.isArray(data) && data.length > 0) {
-          setCustomers(data);
-
-          if (data[0].dynamicFields) {
-            setColumns(Object.keys(data[0].dynamicFields));
-          }
-        } else {
-          setError("Invalid data from server.");
-        }
-      } catch (e) {
-        console.error(e);
-        setError("Failed to fetch customers.");
+        // compute all unique dynamic fields
+        const allCols = Array.from(
+          new Set(
+            data.flatMap((c: any) => Object.keys(c.dynamicFields || {}))
+          )
+        ) as string[];
+        setColumns(allCols);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load customers. Are you logged in?");
       } finally {
         setLoading(false);
       }
     };
-
-    loadData();
+    fetchData();
   }, [navigate]);
 
-  // =============================
-  // UPLOAD CSV
-  // =============================
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleLogout = () => {
+    sessionStorage.removeItem("email");
+    navigate("/login");
+  };
+
+  // ========================== File Upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
-
     try {
-      const response = await api.uploadCsv(file);
-      const data = response.data ?? response;
+      const data = await api.uploadCsv(file);
+      setCustomers(data);
+      const allCols = Array.from(
+        new Set(data.flatMap((c: any) => Object.keys(c.dynamicFields || {})))
+      ) as string[];
+      setColumns(allCols);
 
-      if (Array.isArray(data) && data.length > 0) {
-        setCustomers(data);
-        setColumns(Object.keys(data[0].dynamicFields));
-      }
     } catch (err) {
       console.error(err);
-      alert("CSV upload failed");
+      alert("Failed to upload CSV");
     }
   };
 
-  // =============================
-  // DELETE
-  // =============================
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this customer?")) return;
-
+  // ========================== Delete
+  const handleDelete = async (id: any) => {
+    if (!id) return;
     try {
       await api.deleteCustomer(id);
-      setCustomers(customers.filter((c) => (c.id ?? c._id) !== id));
+      setCustomers(customers.filter(c => c.id !== id));
     } catch (err) {
+      console.error(err);
       alert("Failed to delete customer");
     }
   };
 
-  // =============================
-  // EDIT
-  // =============================
-  const openEditModal = (customer: any) => {
-    setEditingCustomer(JSON.parse(JSON.stringify(customer)));
-    setIsEditModalOpen(true);
-  };
-
-  const saveEdit = async () => {
-    if (!editingCustomer) return;
-
-    const id = editingCustomer.id ?? editingCustomer._id;
-
+  const handleDeleteAll = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL customers?")) return;
     try {
-      const updated = await api.updateCustomer(id, editingCustomer);
-      setCustomers(customers.map((c) => ((c.id ?? c._id) === id ? updated : c)));
-      setIsEditModalOpen(false);
+      await api.deleteAllCustomers();
+      setCustomers([]);
+      setColumns([]);
+      alert("All customers deleted successfully!");
     } catch (err) {
-      alert("Failed to update");
+      console.error(err);
+      alert("Failed to delete all customers");
     }
   };
 
-  // =============================
-  // LOGOUT
-  // =============================
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate("/login");
+  // ========================== Export
+  const handleExportCSV = () => {
+    if (!customers.length || !columns.length) return alert("No data to export");
+    const rows = customers.map(c => columns.map(col => c.dynamicFields[col] ?? ""));
+    const csvContent = [columns, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "customers.csv");
   };
 
+  const handleExportExcel = () => {
+    if (!customers.length || !columns.length) return alert("No data to export");
+    const worksheetData = customers.map(c => ({ id: c.id, ...c.dynamicFields }));
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), "customers.xlsx");
+  };
+
+  // ========================== Edit modal
+  const openEditModal = (c: any) => {
+    setEditingCustomer(JSON.parse(JSON.stringify(c))); // deep copy
+    setShowModal(true);
+  };
+
+  const handleUpdateSave = async () => {
+    if (!editingCustomer) return;
+    setSaving(true);
+    try {
+      await api.updateCustomer(editingCustomer.id, editingCustomer);
+      setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? editingCustomer : c));
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update customer");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading)
+    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin w-12 h-12 text-primary" /></div>;
+
+  if (error)
+    return <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="text-center p-6 bg-card border rounded-lg">
+        <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
+        <p className="text-destructive font-semibold my-4">{error}</p>
+        <Button onClick={() => navigate("/login")}>Go to Login</Button>
+      </div>
+    </div>;
+
   return (
-    <div className="min-h-screen bg-gray-100 p-5 text-gray-900">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-
-        <div className="flex gap-3">
-          <input
-            type="file"
-            accept=".csv"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="secondary"
-          >
-            Upload CSV
-          </Button>
-          <Button variant="destructive" onClick={handleLogout}>
-            Logout
-          </Button>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-b p-4 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3">
+          <img src={bkLogo} alt="BEVERAGE KING" className="w-12 h-12 object-contain rounded-lg" />
+          <span className="text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
         </div>
-      </div>
+        <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+      </header>
 
-      {/* TABLE */}
-      <div className="bg-white shadow rounded">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
+      <main className="pt-24 px-4 pb-8 container mx-auto">
+        <div className="mb-6 flex flex-wrap gap-3">
+          <input type="file" accept=".csv,.xlsx" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileUpload} />
+          <Button onClick={() => fileInputRef.current?.click()}><Upload className="w-4 h-4 mr-1" /> Upload File</Button>
 
-              {columns.map((col) => (
-                <TableHead key={col}>{col}</TableHead>
-              ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline"><Download className="w-4 h-4 mr-1" /> Export <ChevronDown className="w-4 h-4 ml-1" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          <Button variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
+        </div>
 
-          <TableBody>
-            {customers.map((c) => (
-              <TableRow key={c.id ?? c._id}>
-                <TableCell>{c.id ?? c._id}</TableCell>
-
-                {columns.map((col) => (
-                  <TableCell key={col}>{c.dynamicFields?.[col] ?? ""}</TableCell>
-                ))}
-
-                <TableCell>
-                  <div className="flex gap-3">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditModal(c)}
-                    >
-                      Update
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() =>
-                        handleDelete(c.id ?? c._id)
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
+        {customers.length === 0 ? (
+          <div className="text-center py-20 bg-muted/20 rounded-lg">
+            <h3 className="text-xl font-semibold">No Customers Found</h3>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                {columns.map(col => <TableHead key={col}>{col}</TableHead>)}
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {customers.map(c => (
+                <TableRow key={c.id}>
+                  <TableCell>{c.id}</TableCell>
+                  {columns.map(col => <TableCell key={col}>{c.dynamicFields[col] ?? "-"}</TableCell>)}
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Update</Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(c.id)}>Delete</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
 
-      {/* EDIT MODAL */}
-      {isEditModalOpen && editingCustomer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-5">
-          <div className="bg-white p-6 rounded shadow-xl w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">Edit Customer</h2>
+        {/* Edit Modal */}
+        {showModal && editingCustomer && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/70 p-4 z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-xl">
+              <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(editingCustomer.dynamicFields).map(
-                ([key, value]: any) => (
-                  <div key={key}>
-                    <label className="block text-gray-600 text-sm mb-1">
-                      {key}
-                    </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {columns.map(col => (
+                  <div key={col} className="flex flex-col">
+                    <label className="text-sm text-gray-600">{col}</label>
                     <input
-                      className="w-full p-2 border rounded"
-                      value={value}
-                      onChange={(e) =>
-                        setEditingCustomer({
-                          ...editingCustomer,
-                          dynamicFields: {
-                            ...editingCustomer.dynamicFields,
-                            [key]: e.target.value,
-                          },
-                        })
-                      }
+                      className="p-2 rounded border border-gray-300"
+                      value={editingCustomer.dynamicFields[col] ?? ""}
+                      onChange={e => setEditingCustomer(prev => ({
+                        ...prev,
+                        dynamicFields: { ...prev.dynamicFields, [col]: e.target.value }
+                      }))}
                     />
                   </div>
-                )
-              )}
-            </div>
+                ))}
+                <div className="flex flex-col md:col-span-2">
+                  <label>Password (leave blank to keep current)</label>
+                  <input type="password" className="p-2 border rounded" value={editingCustomer.password ?? ""} onChange={e => setEditingCustomer(prev => ({ ...prev, password: e.target.value }))} />
+                </div>
+              </div>
 
-            <div className="flex justify-end mt-6 gap-3">
-              <Button variant="secondary" onClick={() => setIsEditModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={saveEdit}>Save Changes</Button>
+              <div className="mt-6 flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+                <Button onClick={handleUpdateSave} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </main>
     </div>
   );
-};
+}
 
 export default AdminDashboard;
