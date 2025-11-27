@@ -18,7 +18,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, AlertCircle, Loader } from "lucide-react";
+import { ChevronDown, AlertCircle, Loader, LogOut, Upload, Download } from "lucide-react";
+import bkLogo from "@/assets/bk-logo.jpg";
 
 export function AdminDashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -123,6 +124,35 @@ export function AdminDashboard() {
     saveAs(blob, "customers.xlsx");
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const response = await api.uploadCsv(file);
+      // depending on backend response shape: either response.data or response itself
+      const data = response.data ?? response;
+      if (Array.isArray(data)) {
+        const sanitized = data.map((c: any) => ({
+          ...c,
+          earnedPoints: c.earnedPoints ?? 0,
+          totalVisits: c.totalVisits ?? 0,
+          totalSpend: c.totalSpend ?? 0,
+          isEmployee: c.isEmployee ?? false,
+        }));
+        setCustomers(sanitized);
+      } else {
+        // If backend returns created rows under data property:
+        const arr = data.data ?? [];
+        if (Array.isArray(arr)) setCustomers(arr);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload CSV");
+    }
+  };
+
+  // Open edit modal with a deep copy so table isn't mutated until save
   const openEditModal = (c: any) => {
     setEditingCustomer(c);
     setShowModal(true);
@@ -152,56 +182,105 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen flex-col">
-        <Loader className="h-12 w-12 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Loading customers...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="mt-4 text-muted-foreground">Loading customers...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen flex-col bg-destructive/10">
-        <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="mt-4 text-destructive-foreground font-semibold">{error}</p>
-        <Button onClick={() => navigate("/login")} variant="destructive" className="mt-6">
-          Go to Login
-        </Button>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center rounded-lg border border-border bg-card p-8 max-w-md">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <p className="text-destructive font-semibold mb-6">{error}</p>
+          <Button 
+            onClick={() => navigate("/login")} 
+            className="bg-primary hover:bg-primary/90"
+          >
+            Go to Login
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10 bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={handleLogout}>Logout</Button>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header - Matches home page design */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          {/* Logo & Title */}
+          <div className="flex items-center gap-3">
+            <img
+              src={bkLogo}
+              alt="BEVERAGE KING"
+              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
+            />
+            <span className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              Admin Dashboard
+            </span>
+          </div>
 
-      <div className="flex justify-end mb-4 space-x-2">
-        <input
-          type="file"
-          accept=".csv,.xlsx"
-          style={{ display: "none" }}
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-        />
-        <Button onClick={() => fileInputRef.current?.click()}>Upload File</Button>
+          {/* Logout Button */}
+          <Button 
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="border-primary/30 hover:bg-primary/10"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Logout
+          </Button>
+        </div>
+      </header>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center">
-              Export
-              <ChevronDown className="ml-1 h-4 w-4" />
+      {/* Main Content */}
+      <main className="pt-24 pb-8 px-4">
+        <div className="container mx-auto">
+          {/* Title Section */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-extrabold mb-2">Manage Customers</h1>
+            <p className="text-muted-foreground">Upload, view, and manage customer data</p>
+          </div>
+
+          {/* Action Buttons - Styled consistently */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            <input
+              type="file"
+              accept=".csv,.xlsx"
+              style={{ display: "none" }}
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+            />
+            <Button 
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2"
+            >
+              <Upload className="w-4 h-4" /> Upload File
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
-        <Button variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="border-primary/30 hover:bg-primary/10 flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" /> Export
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+        <Button variant="destructive" onClick={handleDeleteAll}>
+          Delete All
+        </Button>
       </div>
 
       {customers.length === 0 ? (
@@ -213,18 +292,42 @@ export function AdminDashboard() {
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((col) => (
-                <TableHead key={col}>{col}</TableHead>
-              ))}
+              <TableHead>ID</TableHead>
+              <TableHead>CurrentRank</TableHead>
+              <TableHead>DisplayID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>SignUpDate</TableHead>
+              <TableHead>Points</TableHead>
+              <TableHead>TotalVisits</TableHead>
+              <TableHead>TotalSpend</TableHead>
+              <TableHead>LastPurchaseDate</TableHead>
+              <TableHead>IsEmployee</TableHead>
+              <TableHead>StartDate</TableHead>
+              <TableHead>EndDate</TableHead>
+              <TableHead>InternalLoyaltyCustomerId</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer, idx) => (
-              <TableRow key={idx}>
-                {columns.map((col) => (
-                  <TableCell key={col}>{customer[col]?.toString() ?? ""}</TableCell>
-                ))}
+            {customers.map((customer) => (
+              <TableRow key={customer.id}>
+                <TableCell>{customer.id}</TableCell>
+                <TableCell>{customer.currentRank}</TableCell>
+                <TableCell>{customer.displayId}</TableCell>
+                <TableCell>{customer.name}</TableCell>
+                <TableCell>{customer.phone}</TableCell>
+                <TableCell>{customer.email}</TableCell>
+                <TableCell>{formatDate(customer.signUpDate)}</TableCell>
+                <TableCell>{customer.earnedPoints}</TableCell>
+                <TableCell>{customer.totalVisits}</TableCell>
+                <TableCell>{customer.totalSpend}</TableCell>
+                <TableCell>{formatDate(customer.lastPurchaseDate)}</TableCell>
+                <TableCell>{customer.isEmployee ? "Yes" : "No"}</TableCell>
+                <TableCell>{formatDate(customer.startDate)}</TableCell>
+                <TableCell>{formatDate(customer.endDate)}</TableCell>
+                <TableCell>{customer.internalLoyaltyCustomerId}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button
@@ -237,47 +340,186 @@ export function AdminDashboard() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDelete(customer._id ?? customer.id)}
+                      onClick={() => handleDelete(customer.id)}
                     >
                       Delete
                     </Button>
                   </div>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
 
-      {/* Edit Modal */}
+      {/* Edit Modal - Styled consistently */}
       {showModal && editingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {columns.map((col) => (
-                <div className="flex flex-col" key={col}>
-                  <label className="text-sm text-gray-600">{col}</label>
-                  <input
-                    className="p-2 rounded border border-gray-300 text-gray-900"
-                    value={editingCustomer[col] ?? ""}
-                    onChange={(e) =>
-                      setEditingCustomer({ ...editingCustomer, [col]: e.target.value })
-                    }
-                  />
-                </div>
-              ))}
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Current Rank</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.currentRank}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, currentRank: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Display ID</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.displayId}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, displayId: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Name</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.name}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Phone</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.phone}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Email</label>
+                <input
+                  type="email"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.email}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Sign Up Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.signUpDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, signUpDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Last Purchase Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.lastPurchaseDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, lastPurchaseDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Earned Points</label>
+                <input
+                  type="number"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.earnedPoints}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, earnedPoints: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Total Visits</label>
+                <input
+                  type="number"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.totalVisits}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, totalVisits: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Total Spend</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.totalSpend}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, totalSpend: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 p-2">
+                <input
+                  type="checkbox"
+                  checked={!!editingCustomer.isEmployee}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, isEmployee: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label className="text-sm text-gray-700">Is Employee</label>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">Start Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.startDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, startDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-sm text-gray-600">End Date</label>
+                <input
+                  type="date"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.endDate}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, endDate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-sm text-gray-600">Internal Loyalty Customer ID</label>
+                <input
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.internalLoyaltyCustomerId}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, internalLoyaltyCustomerId: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-sm text-gray-600">Password (leave blank to keep current)</label>
+                <input
+                  type="password"
+                  className="p-2 rounded border border-gray-300 text-gray-900"
+                  value={editingCustomer.password}
+                  onChange={(e) => setEditingCustomer({ ...editingCustomer, password: e.target.value })}
+                />
+              </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-8 flex justify-end gap-3">
               <Button
                 onClick={() => setShowModal(false)}
-                className="bg-yellow-400 text-black hover:bg-yellow-400"
+                variant="outline"
+                className="border-border hover:bg-muted"
               >
                 Cancel
               </Button>
-              <Button onClick={handleUpdateSave} disabled={saving}>
+              <Button 
+                onClick={handleUpdateSave} 
+                disabled={saving}
+                className="bg-primary hover:bg-primary/90"
+              >
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
             </div>

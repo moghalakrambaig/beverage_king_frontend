@@ -124,11 +124,21 @@ const Index = () => {
                     {user.cus_name || user.email}
                   </span>
                 </div>
+
+                {/* Prominent Edit Profile button */}
+                <Button
+                  onClick={() => navigate(`/customer-details/${user.id}`)}
+                  size="sm"
+                  className="ml-3 bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Edit Profile
+                </Button>
+
                 <Button
                   onClick={handleSignOut}
                   variant="outline"
                   size="sm"
-                  className="border-primary/30 hover:bg-primary/10"
+                  className="ml-2 border-primary/30 hover:bg-primary/10"
                 >
                   <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
@@ -173,6 +183,18 @@ const Index = () => {
                     {user.cus_name || user.email}
                   </span>
                 </div>
+
+                <Button
+                  onClick={() => {
+                    navigate(`/customer-details/${user.id}`);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  size="sm"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Edit Profile
+                </Button>
+
                 <Button
                   onClick={handleSignOut}
                   variant="outline"

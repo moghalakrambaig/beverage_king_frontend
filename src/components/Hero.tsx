@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Crown, Sparkles, Bell, Instagram } from "lucide-react";
+import { Crown, Sparkles, Bell, Instagram, Glasses, GlassWater } from "lucide-react";
 import bkLogo from "@/assets/bk-logo.jpg";
+import { Link } from "react-router-dom";
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -44,54 +45,103 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
             on what we're working on. This is your VIP pass to everything happening at the crown jewel of spirits.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <Button
-              onClick={onGetStarted}
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-5 text-base rounded-xl shadow-[0_0_30px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.4)] transition-all"
-            >
-              Join the Insiders Club
-            </Button>
-          </div>
-
-          {/* Sign Up Instructions */}
-          <p className="text-base text-muted-foreground">
-            Want in? Just ask the cashier or sign up while checking out!
+{/* Pre-registration form section */}
+        <div className="mt-12 flex flex-col items-center text-center">
+          <p className="mb-4 text-lg font-semibold text-foreground">
+            Please Complete IOur Pre-Registration Form Before Signing Up.
           </p>
+          <a
+            href="https://docs.google.com/forms/d/1a_ULcBtE65z9YqTBD0HqXLEHN6nTcsiU5aqqSPErv2s/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors"
+          >
+            Pre-Registration Form
+          </a>
+        </div>
 
           {/* Feature highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/50 transition-all">
-              <Crown className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Exclusive Early Access</h3>
-              <p className="text-muted-foreground">Barrel drops before we post it on social</p>
-            </div>
+<div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-16">
 
-            <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/50 transition-all">
-              <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Special Releases</h3>
-              <p className="text-muted-foreground">First looks at limited bottles and rare finds</p>
-            </div>
+  <a
+    href="https://beveragekingct.com/shop/?tags=single%20barrels"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border 
+               hover:border-primary/50 transition-all h-full min-h-[280px] 
+               flex flex-col cursor-pointer hover:shadow-lg"
+  >
+    <Crown className="w-12 h-12 text-primary mx-auto mb-4" />
+    <h3 className="text-xl font-semibold mb-2 text-center">Single Barrels</h3>
+    <p className="text-muted-foreground text-center">
+      Single barrels offer a uniquely crafted expression, showcasing the distinct character drawn from just one exceptional cask.
+    </p>
+  </a>
 
-            <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/50 transition-all">
-              <Bell className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Behind-the-Scenes</h3>
-              <p className="text-muted-foreground">Direct updates on what we're working on</p>
-            </div>
-          </div>
-          {/* Instagram section */}
-          <div className="mt-8 flex flex-col items-center text-center">
-            <a
-              href="https://www.instagram.com/beverage_king?igsh=bGlmcHp1NWM1NWVi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-lg text-muted-foreground hover:text-primary transition-.colors"
-            >
-              <Instagram className="w-6 h-6" />
-              <span>Follow us on Instagram for all the latest details!</span>
-            </a>
-          </div>
+  <a
+    href="https://beveragekingct.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border 
+               hover:border-primary/50 transition-all h-full min-h-[280px] 
+               flex flex-col cursor-pointer hover:shadow-lg"
+  >
+    <Bell className="w-12 h-12 text-primary mx-auto mb-4" />
+    <h3 className="text-xl font-semibold mb-2 text-center">Special Releases</h3>
+    <p className="text-muted-foreground text-center">
+      First looks at limited bottles and rare finds.
+    </p>
+  </a>
+
+  <a
+    href="https://beveragekingct.com/shop/?category=our_new_arrivals&title=New%20Arrivals"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border 
+               hover:border-primary/50 transition-all h-full min-h-[280px] 
+               flex flex-col cursor-pointer hover:shadow-lg"
+  >
+    <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+    <h3 className="text-xl font-semibold mb-2 text-center">New Arrivals</h3>
+    <p className="text-muted-foreground text-center">
+      New arrivals bring fresh, exciting selections that highlight the latest additions.
+    </p>
+  </a>
+
+  <a
+    href="https://beveragekingct.com/events"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border 
+               hover:border-primary/50 transition-all h-full min-h-[280px] 
+               flex flex-col cursor-pointer hover:shadow-lg"
+  >
+    <GlassWater className="w-12 h-12 text-primary mx-auto mb-4" />
+    <h3 className="text-xl font-semibold mb-2 text-center">Tasting & Events</h3>
+    <p className="text-muted-foreground text-center">
+      Tasting & Events provide immersive experiences that let you explore flavors and connect with experts.
+    </p>
+  </a>
+
+</div>
+
+
+         {/* Instagram section */}
+<div className="mt-8 flex flex-col items-center text-center">
+  <a
+    href="https://www.instagram.com/beverage_king?igsh=bGlmcHp1NWM1NWVi"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-3 text-lg font-semibold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500
+               px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform duration-300"
+  >
+    <Instagram className="w-6 h-6" />
+    <span>Follow us on Instagram for all the latest details!</span>
+  </a>
+</div>
+
+        
+
         </div>
       </div>
     </div>
