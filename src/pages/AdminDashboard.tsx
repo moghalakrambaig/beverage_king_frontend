@@ -163,26 +163,34 @@ export function AdminDashboard() {
           <img src={bkLogo} alt="BEVERAGE KING" className="w-12 h-12 object-contain rounded-lg" />
           <span className="text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
         </div>
-        <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+
+        {/* Right controls: upload / export / delete all + logout */}
+        <div className="flex items-center gap-3">
+          <input type="file" accept=".csv,.xlsx" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+
+          <div className="flex items-center gap-2">
+            <Button onClick={() => fileInputRef.current?.click()} size="sm"><Upload className="w-4 h-4 mr-1" /> Upload</Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline"><Download className="w-4 h-4 mr-1" /> Export <ChevronDown className="w-3 h-3 ml-1" /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button size="sm" variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
+          </div>
+
+          <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+        </div>
       </header>
 
       <main className="pt-24 px-4 pb-8 container mx-auto">
-        <div className="mb-6 flex flex-wrap gap-3">
-          <input type="file" accept=".csv,.xlsx" style={{ display: "none" }} ref={fileInputRef} onChange={handleFileUpload} />
-          <Button onClick={() => fileInputRef.current?.click()}><Upload className="w-4 h-4 mr-1" /> Upload File</Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline"><Download className="w-4 h-4 mr-1" /> Export <ChevronDown className="w-4 h-4 ml-1" /></Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportExcel}>Export as Excel</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
-        </div>
+        {/* spacer under header */}
+        <div className="mb-6" />
 
         {customers.length === 0 ? (
           <div className="text-center py-20 bg-muted/20 rounded-lg">
