@@ -8,6 +8,8 @@ import { LogOut, User as UserIcon, Menu, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import bkLogo from "@/assets/bk-logo.jpg";
 import { api } from "@/lib/api"; // your backend API wrapper
+import { Share2, Facebook, Twitter, Send, MessageCircle, Instagram, Users } from "lucide-react";
+
 
 interface Customer {
   id: number;
@@ -71,6 +73,26 @@ const Index = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const shareUrl = "https://beveragekingct.com";
+  const shareText = "Check out the Beverage King Insiders Club! 🍷🔥";
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Beverage King Insiders Club",
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.log("Share cancelled");
+      }
+    } else {
+      alert("Sharing not supported on this device. Use the icons below!");
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -78,20 +100,20 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-baseline gap-3">
-  <img
-    src={bkLogo}
-    alt="BEVERAGE KING"
-    className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
-  />
+            <img
+              src={bkLogo}
+              alt="BEVERAGE KING"
+              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
+            />
 
-  <span className="relative" style={{ top: "-4px" }}>
-    <span className="text-3xl sm:text-4xl font-extrabold font-cursive
+            <span className="relative" style={{ top: "-4px" }}>
+              <span className="text-3xl sm:text-4xl font-extrabold font-cursive
       bg-gradient-to-r from-primary via-accent to-primary bg-clip-text
       text-transparent animate-gradient leading-none">
-      Beverage King
-    </span>
-  </span>
-</Link>
+                Beverage King
+              </span>
+            </span>
+          </Link>
 
 
           {/* Desktop Menu */}
@@ -216,11 +238,103 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-border">
+      <footer className="py-10 px-4 border-t border-border">
         <div className="container mx-auto text-center text-muted-foreground">
-          <p>© 2025 Beverage King. All rights reserved.</p>
+
+          {/* Modern Share Box */}
+          <div className="mt-6 flex flex-col items-center gap-4">
+
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="
+          flex items-center gap-2 px-6 py-3 rounded-full
+          bg-gradient-to-r from-primary via-purple-500 to-pink-500
+          text-white font-semibold shadow-lg
+          hover:scale-105 hover:shadow-xl
+          transition-all duration-300
+        "
+            >
+              <Share2 className="w-5 h-5" />
+              Share This Website
+            </button>
+
+            {/* Social Icons Row */}
+            <div className="flex items-center gap-6 mt-2 justify-center">
+
+              {/* WhatsApp */}
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-green-500/20 hover:bg-green-500/30 transition-all"
+              >
+                <MessageCircle className="w-6 h-6 text-green-500" />
+              </a>
+
+              {/* Telegram */}
+              <a
+                href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-blue-500/20 hover:bg-blue-500/30 transition-all"
+              >
+                <Send className="w-6 h-6 text-blue-500" />
+              </a>
+
+              {/* Facebook */}
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all"
+              >
+                <Facebook className="w-6 h-6 text-blue-600" />
+              </a>
+
+              {/* Twitter/X */}
+<a
+  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all flex items-center justify-center"
+>
+  <Twitter className="w-6 h-6 text-blue-500" />
+</a>
+
+
+              {/* Discord (Lucide placeholder) */}
+              <a
+                href="https://discord.gg/YOUR_SERVER_INVITE" // Replace with your Discord invite link
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 transition-all"
+              >
+                <Users className="w-6 h-6 text-indigo-500" />
+              </a>
+
+
+              {/* Instagram */}
+              <a
+                href="https://www.instagram.com/beverage_king" // Replace with your IG
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-pink-500/20 hover:bg-pink-500/30 transition-all"
+              >
+                <Instagram className="w-6 h-6 text-pink-500" />
+              </a>
+
+            </div>
+
+
+          </div>
+
+          {/* Footer Text */}
+          <p className="mt-6 text-sm">© 2025 Beverage King. All rights reserved.</p>
         </div>
       </footer>
+
+
 
       {/* Auth Dialog */}
       <AuthDialog
