@@ -3,23 +3,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// We only keep a single sign-in flow, remove signup tab
 import { useToast } from "@/hooks/use-toast";
 import { Wine, Eye, EyeOff } from "lucide-react";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSignIn?: (email: string, password: string) => Promise<void>;
 }
 
-export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) => {
+export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const { toast } = useToast();
 
-  // Sign-up removed; this dialog only handles sign-in now
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
+  // ==================== Sign In ====================
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -35,19 +37,32 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
     }
 
     try {
-      if (onSignIn) await onSignIn(email, password);
+      // Directly call backend signin
+      const res = await fetch(`${BASE_URL}/api/auth/signin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        credentials: "include",
+        body: new URLSearchParams({ email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Invalid credentials");
+      }
+
+      const data = await res.json();
       toast({ title: "Welcome Back!", description: "Signed in successfully." });
       onOpenChange(false);
     } catch (err: any) {
-      toast({ title: "Sign In Failed", description: err.message, variant: "destructive" });
+      toast({ title: "Sign In Failed", description: err.message || "Something went wrong", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [forgotLoading, setForgotLoading] = useState(false);
-
+  // ==================== Forgot Password ====================
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setForgotLoading(true);
@@ -62,30 +77,18 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
     }
 
     try {
-      // 🔗 call your backend endpoint
-      const res = await fetch("http://localhost:8080/api/auth/forgot-password", {
+      const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email }), // send email in JSON body
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email }),
       });
-
 
       if (!res.ok) throw new Error("Failed to send reset link");
 
-      toast({
-        title: "Email Sent!",
-        description: "A password reset link has been sent to your email.",
-      });
+      toast({ title: "Email Sent!", description: "A password reset link has been sent to your email." });
       setForgotPasswordOpen(false);
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "Something went wrong",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });
     } finally {
       setForgotLoading(false);
     }
@@ -106,98 +109,67 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="w-full">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  name="signin-email"
-                  type="email"
-                  
-                  required
-                  className="bg-background"
-                />
-              </div>
+        <form onSubmit={handleSignIn} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="signin-email">Email</Label>
+            <Input id="signin-email" name="signin-email" type="email" required className="bg-background" />
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <div className="flex items-center relative">
-                  <Input
-                    id="signin-password"
-                    name="signin-password"
-                    type={showSignInPassword ? "text" : "password"}
-                   
-                    required
-                    className="bg-background pr-10 w-full"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignInPassword(!showSignInPassword)}
-                    className="absolute right-3 flex items-center justify-center h-full focus:outline-none"
-                    aria-label={showSignInPassword ? "Hide password" : "Show password"}
-                  >
-                    {showSignInPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={loading}
+          <div className="space-y-2">
+            <Label htmlFor="signin-password">Password</Label>
+            <div className="flex items-center relative">
+              <Input
+                id="signin-password"
+                name="signin-password"
+                type={showSignInPassword ? "text" : "password"}
+                required
+                className="bg-background pr-10 w-full"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSignInPassword(!showSignInPassword)}
+                className="absolute right-3 flex items-center justify-center h-full focus:outline-none"
+                aria-label={showSignInPassword ? "Hide password" : "Show password"}
               >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
+                {showSignInPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
 
-              {/* 👉 NEW: Forgot password link */}
-              <div className="text-center mt-2">
-                <button
-                  type="button"
-                  className="text-sm text-primary hover:underline"
-                  onClick={() => setForgotPasswordOpen(true)}
-                >
-                  Forgot password?
-                </button>
-              </div>
-            </form>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
+          </Button>
 
-            {/* 👉 NEW: Forgot Password Dialog */}
-            {forgotPasswordOpen && (
-              <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
-                <DialogContent className="sm:max-w-sm bg-card border-primary/20">
-                  <DialogHeader>
-                    <DialogTitle className="text-lg text-center">Reset Password</DialogTitle>
-                    <DialogDescription className="text-center">
-                      Enter your email address to receive a reset link.
-                    </DialogDescription>
-                  </DialogHeader>
+          <div className="text-center mt-2">
+            <button type="button" className="text-sm text-primary hover:underline" onClick={() => setForgotPasswordOpen(true)}>
+              Forgot password?
+            </button>
+          </div>
+        </form>
 
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="forgot-email">Email</Label>
-                      <Input
-                        id="forgot-email"
-                        name="forgot-email"
-                        type="email"
-                        
-                        required
-                        className="bg-background"
-                      />
-                    </div>
+        {forgotPasswordOpen && (
+          <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+            <DialogContent className="sm:max-w-sm bg-card border-primary/20">
+              <DialogHeader>
+                <DialogTitle className="text-lg text-center">Reset Password</DialogTitle>
+                <DialogDescription className="text-center">
+                  Enter your email address to receive a reset link.
+                </DialogDescription>
+              </DialogHeader>
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                      disabled={forgotLoading}
-                    >
-                      {forgotLoading ? "Sending..." : "Send Reset Link"}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
-        </div>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input id="forgot-email" name="forgot-email" type="email" required className="bg-background" />
+                </div>
+
+                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={forgotLoading}>
+                  {forgotLoading ? "Sending..." : "Send Reset Link"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </DialogContent>
     </Dialog>
   );

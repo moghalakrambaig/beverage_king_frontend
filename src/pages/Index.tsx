@@ -226,7 +226,6 @@ const Index = () => {
       <AuthDialog
         open={authDialogOpen}
         onOpenChange={setAuthDialogOpen}
-        onSignIn={handleSignIn}
       />
     </div>
   );
