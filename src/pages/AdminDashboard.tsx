@@ -224,25 +224,40 @@ export function AdminDashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                {columns.map(col => <TableHead key={col}>{col}</TableHead>)}
+                {columns.map((col) => (
+                  <TableHead key={col}>{col}</TableHead>
+                ))}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map(c => (
+              {customers.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell>{c.id}</TableCell>
-                  {columns.map(col => <TableCell key={col}>{c.dynamicFields[col] ?? "-"}</TableCell>)}
+                  {columns.map((col) => (
+                    <TableCell key={col}>
+                      {c.dynamicFields && c.dynamicFields[col] !== undefined
+                        ? c.dynamicFields[col]
+                        : c[col] !== undefined
+                          ? c[col]
+                          : "-"}
+                    </TableCell>
+                  ))}
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>Update</Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(c.id)}>Delete</Button>
+                      <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>
+                        Update
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(c.id)}>
+                        Delete
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+
         )}
 
         {/* Edit Modal */}
