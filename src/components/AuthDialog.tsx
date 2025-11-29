@@ -37,19 +37,28 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     try {
-      // Directly call backend signin
+      // Send as JSON to match backend expectation
       const res = await fetch(`${BASE_URL}/api/auth/customer-login`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
         credentials: "include",
-        body: new URLSearchParams({ email, password }),
+        body: JSON.stringify({ email, password }), // Convert to JSON
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Invalid credentials");
+        const errorText = await res.text();
+        let errorMessage = "Invalid credentials";
+
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
