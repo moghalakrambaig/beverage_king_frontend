@@ -39,6 +39,8 @@ const Index = () => {
     }
   }, []);
 
+
+
   // Sign In
   const handleSignIn = async (email: string, password: string) => {
     try {
@@ -336,7 +338,6 @@ const Index = () => {
       <AuthDialog
         open={authDialogOpen}
         onOpenChange={setAuthDialogOpen}
-        onSignIn={handleSignIn}
       />
     </div>
   );
