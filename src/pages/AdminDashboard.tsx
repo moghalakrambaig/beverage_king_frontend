@@ -226,9 +226,7 @@ export function AdminDashboard() {
                 <TableHead>ID</TableHead>
                 {columns.map((col) => (
                   <TableHead key={col}>{col}</TableHead>
-                ))}
-                <TableHead>Actions</TableHead>
-              </TableRow>
+                ))}              </TableRow>
             </TableHeader>
             <TableBody>
               {customers.map((c) => (
@@ -243,16 +241,6 @@ export function AdminDashboard() {
                           : "-"}
                     </TableCell>
                   ))}
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditModal(c)}>
-                        Update
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(c.id)}>
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

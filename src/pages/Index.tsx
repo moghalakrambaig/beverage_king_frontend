@@ -256,77 +256,7 @@ const Index = () => {
               <Share2 className="w-5 h-5" />
               Share This Website
             </button>
-
-            {/* Social Icons Row */}
-            <div className="flex items-center gap-6 mt-2 justify-center">
-
-              {/* WhatsApp */}
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(shareUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-green-500/20 hover:bg-green-500/30 transition-all"
-              >
-                <MessageCircle className="w-6 h-6 text-green-500" />
-              </a>
-
-              {/* Telegram */}
-              <a
-                href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-blue-500/20 hover:bg-blue-500/30 transition-all"
-              >
-                <Send className="w-6 h-6 text-blue-500" />
-              </a>
-
-              {/* Facebook */}
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all"
-              >
-                <Facebook className="w-6 h-6 text-blue-600" />
-              </a>
-
-              {/* Twitter/X */}
-              <a
-                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all flex items-center justify-center"
-              >
-                <Twitter className="w-6 h-6 text-blue-500" />
-              </a>
-
-
-              {/* Discord (Lucide placeholder) */}
-              <a
-                href="https://discord.gg/YOUR_SERVER_INVITE" // Replace with your Discord invite link
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 transition-all"
-              >
-                <Users className="w-6 h-6 text-indigo-500" />
-              </a>
-
-
-              {/* Instagram */}
-              <a
-                href="https://www.instagram.com/beverage_king" // Replace with your IG
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full bg-pink-500/20 hover:bg-pink-500/30 transition-all"
-              >
-                <Instagram className="w-6 h-6 text-pink-500" />
-              </a>
-
-            </div>
-
-
           </div>
-
           {/* Footer Text */}
           <p className="mt-6 text-sm">© 2025 Beverage King. All rights reserved.</p>
         </div>
