@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Wine, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -29,6 +30,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("signin-email") as string;
     const password = formData.get("signin-password") as string;
+    const navigate = useNavigate();
 
     if (!email || !password) {
       toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
@@ -63,6 +65,8 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
       const data = await res.json();
       toast({ title: "Welcome Back!", description: "Signed in successfully." });
+      navigate(`/customer-dashboard`);
+
       onOpenChange(false);
     } catch (err: any) {
       toast({ title: "Sign In Failed", description: err.message || "Something went wrong", variant: "destructive" });

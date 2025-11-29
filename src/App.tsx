@@ -43,7 +43,7 @@ const App = () => {
            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/customer-details/:id" element={<CustomerDetails />} />
-            <Route path="/customer-dashboard/:id" element={<CustomerDashboard />} />
+            <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
