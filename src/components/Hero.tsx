@@ -47,55 +47,21 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
           </p>
 
           {/* Pre-registration form section */}
-          <div className="mt-16 flex flex-col items-center text-center relative">
+          {/* Pre-registration form section */}
+          <div className="mt-12 flex flex-col items-center text-center">
+           <p className="mb-4 text-xl font-semibold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
 
-            {/* Floating sparkles */}
-            <div className="absolute -top-6 flex gap-4">
-              <Sparkles
-                className="w-6 h-6 text-purple-400 opacity-70 animate-[floatSparkle_3s_infinite_ease-in-out]"
-              />
-              <Sparkles
-                className="w-5 h-5 text-primary opacity-60 animate-[floatSparkle_2.5s_infinite_ease-in-out]"
-              />
-              <Sparkles
-                className="w-4 h-4 text-pink-400 opacity-70 animate-[floatSparkle_4s_infinite_ease-in-out]"
-              />
-            </div>
-
-            {/* Animated shimmer + glow text */}
-            <p
-              className="
-    mb-6 text-2xl font-bold 
-    bg-gradient-to-r from-primary via-purple-400 to-pink-500
-    bg-clip-text text-transparent
-    max-w-3xl
-  "
-            >
-              ✨ Become a Valued Member of the Beverage King Insider Club — Tap Below to Get Started! ✨
+              ✨ Become a Valued Member of the Beverage King Insider Club — Click Below to get started! ✨
             </p>
 
-
-
-            {/* Premium glowing animated button */}
             <a
               href="https://docs.google.com/forms/d/1a_ULcBtE65z9YqTBD0HqXLEHN6nTcsiU5aqqSPErv2s/viewform"
               target="_blank"
               rel="noopener noreferrer"
-              className="
-    px-12 py-4 rounded-2xl font-bold text-white
-    bg-gradient-to-r from-primary via-purple-500 to-pink-600
-    shadow-xl
-    transition-all duration-300
-    hover:scale-110 hover:shadow-2xl
-  "
+              className="px-10 py-3 rounded-2xl bg-gradient-to-r from-primary to-purple-500 text-white font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
             >
-              ✨ SIGN UP NOW ✨
+               SIGN UP NOW 
             </a>
-
-
-            {/* Ambient glow behind button */}
-            <div className="absolute bottom-2 w-48 h-48 rounded-full bg-purple-500/20 blur-3xl -z-10"></div>
-
           </div>
 
 
