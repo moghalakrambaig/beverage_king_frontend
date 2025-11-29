@@ -5,32 +5,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Wine, Eye, EyeOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSignIn: (email: string, password: string) => Promise<void>;
 }
 
-export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const { toast } = useToast();
-
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+  const { toast } = useToast();
 
   // ==================== Sign In ====================
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     const email = formData.get("signin-email") as string;
     const password = formData.get("signin-password") as string;
-    const navigate = useNavigate();
 
     if (!email || !password) {
       toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
@@ -38,41 +36,9 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       return;
     }
 
-    try {
-      // Send as JSON to match backend expectation
-      const res = await fetch(`${BASE_URL}/api/auth/customer-login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password }), // Convert to JSON
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        let errorMessage = "Invalid credentials";
-
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      const data = await res.json();
-      toast({ title: "Welcome Back!", description: "Signed in successfully." });
-      navigate(`/customer-dashboard`);
-
-      onOpenChange(false);
-    } catch (err: any) {
-      toast({ title: "Sign In Failed", description: err.message || "Something went wrong", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    await onSignIn(email, password);
+    setLoading(false);
+    onOpenChange(false);
   };
 
   // ==================== Forgot Password ====================
@@ -92,7 +58,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     try {
       const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
@@ -122,7 +88,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signin-email">Email</Label>
             <Input id="signin-email" name="signin-email" type="email" required className="bg-background" />
@@ -141,8 +107,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <button
                 type="button"
                 onClick={() => setShowSignInPassword(!showSignInPassword)}
-                className="absolute right-3 flex items-center justify-center h-full focus:outline-none"
-                aria-label={showSignInPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 flex items-center justify-center h-full"
               >
                 {showSignInPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -154,12 +119,17 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           </Button>
 
           <div className="text-center mt-2">
-            <button type="button" className="text-sm text-primary hover:underline" onClick={() => setForgotPasswordOpen(true)}>
+            <button
+              type="button"
+              className="text-sm text-primary hover:underline"
+              onClick={() => setForgotPasswordOpen(true)}
+            >
               Forgot password?
             </button>
           </div>
         </form>
 
+        {/* Forgot Password Dialog */}
         {forgotPasswordOpen && (
           <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
             <DialogContent className="sm:max-w-sm bg-card border-primary/20">

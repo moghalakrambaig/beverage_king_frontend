@@ -291,14 +291,14 @@ const Index = () => {
               </a>
 
               {/* Twitter/X */}
-<a
-  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all flex items-center justify-center"
->
-  <Twitter className="w-6 h-6 text-blue-500" />
-</a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 transition-all flex items-center justify-center"
+              >
+                <Twitter className="w-6 h-6 text-blue-500" />
+              </a>
 
 
               {/* Discord (Lucide placeholder) */}
@@ -338,7 +338,9 @@ const Index = () => {
       <AuthDialog
         open={authDialogOpen}
         onOpenChange={setAuthDialogOpen}
+        onSignIn={handleSignIn}   // 🔥 pass correct login function
       />
+
     </div>
   );
 };

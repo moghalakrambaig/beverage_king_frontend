@@ -117,7 +117,7 @@ export const api = {
     if (!response.ok)
       throw new Error(
         (typeof data === "object" ? data.message : data) ||
-          "Failed to upload CSV"
+        "Failed to upload CSV"
       );
 
     return data; // array of { id, dynamicFields }
@@ -144,14 +144,24 @@ export const api = {
   login: async (email: string, password: string) => {
     const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { "Content-Type": "application/json" }, // 🔥 JSON
       credentials: "include",
-      body: new URLSearchParams({ email, password }),
+      body: JSON.stringify({ email, password }),        // 🔥 JSON body
     });
 
-    if (!response.ok) throw new Error("Invalid customer login");
+    if (!response.ok) {
+      const errorText = await response.text();
+      let message = "Invalid customer login";
+      try {
+        const data = JSON.parse(errorText);
+        message = data.message || message;
+      } catch { }
+      throw new Error(message);
+    }
+
     return response.json();
   },
+
 
   signup: async (
     name: string,
