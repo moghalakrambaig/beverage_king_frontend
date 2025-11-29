@@ -44,23 +44,23 @@ const Index = () => {
 
   // Sign In
   // Sign In
-  const handleSignIn = async (email: string, password: string) => {
-    try {
-      const res = await api.login(email, password);
-      if (!res.data) throw new Error("Invalid credentials");
-      const customer = res.data;
-      sessionStorage.setItem("user", JSON.stringify(customer));
-      setUser(customer);
-      setPoints(customer.points || 0);
-      setTotalEarned(customer.points || 0);
-      toast({ title: "Welcome back!", description: "Signed in successfully." });
+  // const handleSignIn = async (email: string, password: string) => {
+  //   try {
+  //     const res = await api.login(email, password);
+  //     if (!res.data) throw new Error("Invalid credentials");
+  //     const customer = res.data;
+  //     sessionStorage.setItem("user", JSON.stringify(customer));
+  //     setUser(customer);
+  //     setPoints(customer.points || 0);
+  //     setTotalEarned(customer.points || 0);
+  //     toast({ title: "Welcome back!", description: "Signed in successfully." });
 
-      // Redirect to customer dashboard
-      navigate(`/customer-dashboard/${customer.id}`);
-    } catch (err: any) {
-      toast({ title: "Sign in failed", description: err.message || "Invalid credentials", variant: "destructive" });
-    }
-  };
+  //     // Redirect to customer dashboard
+  //     navigate(`/customer-dashboard/${customer.id}`);
+  //   } catch (err: any) {
+  //     toast({ title: "Sign in failed", description: err.message || "Invalid credentials", variant: "destructive" });
+  //   }
+  // };
 
 
   // Sign Out

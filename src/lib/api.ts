@@ -142,7 +142,7 @@ export const api = {
   // CUSTOMER LOGIN / SIGNUP
   // ==============================
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/customer-logi`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       credentials: "include",
