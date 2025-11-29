@@ -1,134 +1,125 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import bkLogo from "@/assets/bk-logo.jpg";
+import { LogOut, Crown, Bell, Sparkles, GlassWater } from "lucide-react";
+import { DiscordSection } from "@/components/DiscordSection";
 
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  earnedPoints: number;
-  phone?: string;
-}
-
-interface Deal {
-  id: number;
-  title: string;
-  description: string;
-  discount: string;
-}
-
-const CustomerDashboard = () => {
+type Customer = { id: number; name: string; email: string; earnedPoints: number; phone?: string };
+export default function CustomerDashboard() {
   const { id } = useParams<{ id: string }>();
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [deals, setDeals] = useState<Deal[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCustomer = async () => {
+    async function load() {
+      if (!id) return;
       try {
-        if (!id) return;
         const res = await api.getCustomerById(id);
-        setCustomer(res);
-
-        // Example: Fetch exclusive deals (replace with real API if exists)
-        const dealsRes = [
-  { 
-    id: 1, 
-    title: "Bourbon Bliss 10% Of", 
-    description: "Savor your favorite bourbons with a 10% discount this week only!", 
-    discount: "10%" 
-  },
-  { 
-    id: 2, 
-    title: "Double Barrel Offer", 
-    description: "Buy a bottle of select bourbon and get a second one on the house.", 
-    discount: "B1G1" 
-  },
-  { 
-    id: 3, 
-    title: "Smooth Delivery", 
-    description: "Get free shipping on bourbon orders above $100 – enjoy the pour at home!", 
-    discount: "Free Delivery" 
-  }
-];
-
-        setDeals(dealsRes);
-      } catch (err) {
-        console.error(err);
-        navigate("/"); // fallback if customer not found
+        setCustomer(res as any);
+      } catch (e) {
+        console.error(e);
+        navigate("/");
       }
-    };
+    }
 
-    fetchCustomer();
-  }, [id]);
+    load();
+  }, [id, navigate]);
 
   if (!customer)
-    return <p className="p-8 text-center text-yellow-400 font-semibold">Loading...</p>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="p-8 text-center text-muted-foreground font-semibold">Loading...</p>
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-black p-8 text-yellow-400">
-      {/* Welcome Section */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-yellow-400 mb-2">
-          Welcome, {customer.name}!
-        </h1>
-        <p className="text-yellow-300 text-lg">
-          Here’s your account overview
-        </p>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src={bkLogo}
+              alt="BEVERAGE KING"
+              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
+            />
 
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-        {/* Points Card */}
-        <div className="bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-500 text-black rounded-3xl shadow-lg p-8 flex flex-col items-center justify-center">
-          <h2 className="text-2xl font-semibold mb-2">Total Points</h2>
-          <p className="text-5xl font-bold">{customer.earnedPoints}</p>
-          <p className="mt-2 font-medium">Points earned so far</p>
+            <span className="text-3xl sm:text-4xl font-extrabold font-cursive bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+              Beverage King
+            </span>
+          </Link>
+
+          <div>
+            <Button variant="outline" size="sm" onClick={() => { sessionStorage.removeItem("user"); navigate("/"); }}>
+              <LogOut className="w-4 h-4" /> Log Out
+            </Button>
+          </div>
         </div>
+      </header>
 
-        {/* Customer Details Card */}
-        <div className="bg-gray-900 text-yellow-400 rounded-3xl shadow-lg p-8 border border-yellow-600">
-          <h2 className="text-2xl font-semibold mb-4">Your Details</h2>
-          <p className="mb-2">
-            <strong>Name:</strong> {customer.name}
-          </p>
-          <p className="mb-2">
-            <strong>Email:</strong> {customer.email}
-          </p>
-          <p className="mb-2">
-            <strong>Mobile:</strong> {customer.phone || "N/A"}
-          </p>
-        </div>
-      </div>
+      <main className="pt-20 pb-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center my-8">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-2">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Welcome, {customer.name}!</span>
+            </h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Here’s your account overview and curated picks.</p>
+          </div>
 
-      {/* Exclusive Deals Section */}
-      <div className="max-w-4xl mx-auto mt-12">
-        <h2 className="text-3xl font-bold text-yellow-400 mb-4 text-center">Exclusive Deals</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {deals.map((deal) => (
-            <div key={deal.id} className="bg-gray-800 text-yellow-300 p-6 rounded-2xl shadow-lg border border-yellow-600 flex flex-col justify-between">
-              <h3 className="text-xl font-semibold mb-2">{deal.title}</h3>
-              <p className="mb-2">{deal.description}</p>
-              <span className="font-bold text-yellow-400">{deal.discount}</span>
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+            <div className="rounded-2xl bg-card border border-border p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold mb-2">Total Points</h2>
+              <p className="text-5xl font-bold mb-2 text-foreground">{customer.earnedPoints}</p>
+              <p className="text-muted-foreground">Points earned so far</p>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Logout Button */}
-      <div className="max-w-md mx-auto mt-12">
-        <Button
-          className="w-full py-3 bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-500 text-black font-semibold rounded-3xl shadow-lg hover:from-yellow-400 hover:to-yellow-600"
-          onClick={() => {
-            sessionStorage.removeItem("user");
-            navigate("/");
-          }}
-        >
-          Log Out
-        </Button>
-      </div>
+            <div className="rounded-2xl bg-card border border-border p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold mb-4">Your Details</h2>
+              <p className="mb-2"><strong className="text-foreground">Name:</strong> <span className="text-muted-foreground">{customer.name}</span></p>
+              <p className="mb-2"><strong className="text-foreground">Email:</strong> <span className="text-muted-foreground">{customer.email}</span></p>
+              <p className="mb-2"><strong className="text-foreground">Mobile:</strong> <span className="text-muted-foreground">{customer.phone || "N/A"}</span></p>
+            </div>
+          </div>
+
+          {/* Exclusive Deals removed per request */}
+
+          <div className="max-w-5xl mx-auto mt-12">
+            <h2 className="text-3xl font-bold mb-4">Explore More</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <a href="https://beveragekingct.com/shop/?tags=single%20barrels" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl bg-card border border-border hover:border-primary transition-all flex flex-col items-center">
+                <Crown className="w-10 h-10 text-primary mb-3" />
+                <h3 className="font-semibold">Single Barrels</h3>
+                <p className="text-sm text-muted-foreground text-center mt-2">Unique expressions from single casks — limited and special.</p>
+              </a>
+
+              <a href="https://beveragekingct.com/" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl bg-card border border-border hover:border-primary transition-all flex flex-col items-center">
+                <Bell className="w-10 h-10 text-primary mb-3" />
+                <h3 className="font-semibold">Special Releases</h3>
+                <p className="text-sm text-muted-foreground text-center mt-2">First looks at limited bottles and rare finds.</p>
+              </a>
+
+              <a href="https://beveragekingct.com/shop/?category=our_new_arrivals&title=New%20Arrivals" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl bg-card border border-border hover:border-primary transition-all flex flex-col items-center">
+                <Sparkles className="w-10 h-10 text-primary mb-3" />
+                <h3 className="font-semibold">New Arrivals</h3>
+                <p className="text-sm text-muted-foreground text-center mt-2">See what's new on the shelf and get notified of releases.</p>
+              </a>
+
+              <a href="https://beveragekingct.com/events" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl bg-card border border-border hover:border-primary transition-all flex flex-col items-center">
+                <GlassWater className="w-10 h-10 text-primary mb-3" />
+                <h3 className="font-semibold">Tasting & Events</h3>
+                <p className="text-sm text-muted-foreground text-center mt-2">Join tastings, events and meet the experts behind the pour.</p>
+              </a>
+            </div>
+          </div>
+
+          {/* Discord community section */}
+          <div className="max-w-5xl mx-auto mt-12">
+            <DiscordSection />
+          </div>
+
+        </div>
+      </main>
     </div>
   );
-};
-
-export default CustomerDashboard;
+}

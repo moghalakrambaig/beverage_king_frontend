@@ -11,7 +11,8 @@ import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import CustomerDetails from "./pages/CustomerDetails";
-import CustomerDashboard from "./pages/CustomerDashboardClean";
+import CustomerDashboard from "./pages/CustomerDashboard";
+import CustomerDashboardClean from "./pages/CustomerDashboard";
 
 const queryClient = new QueryClient();
 
