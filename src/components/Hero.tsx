@@ -89,7 +89,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
     hover:scale-110 hover:shadow-2xl
   "
             >
-              ✨ SIGN UP NOW ✨
+              SIGN UP NOW
             </a>
 
 
