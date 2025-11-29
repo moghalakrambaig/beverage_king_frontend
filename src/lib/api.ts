@@ -141,17 +141,17 @@ export const api = {
   // ==============================
   // CUSTOMER LOGIN / SIGNUP
   // ==============================
-  // login: async (email: string, password: string) => {
-  //   const response = await fetch(`${BASE_URL}/api/auth/customer-logiN`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //     credentials: "include",
-  //     body: new URLSearchParams({ email, password }),
-  //   });
+  login: async (email: string, password: string) => {
+    const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "include",
+      body: new URLSearchParams({ email, password }),
+    });
 
-  //   if (!response.ok) throw new Error("Invalid customer login");
-  //   return response.json();
-  // },
+    if (!response.ok) throw new Error("Invalid customer login");
+    return response.json();
+  },
 
   signup: async (
     name: string,

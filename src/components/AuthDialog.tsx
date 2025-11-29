@@ -11,9 +11,10 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSignIn?: (email: string, password: string) => Promise<void> | void;
 }
 
-export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
+export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const { toast } = useToast();
@@ -22,6 +23,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [forgotLoading, setForgotLoading] = useState(false);
 
   // ==================== Sign In ====================
+  // Keep a local fallback sign-in implementation but prefer the parent-provided onSignIn.
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -118,7 +120,36 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form
+          onSubmit={async (e) => {
+            // If parent passed in an onSignIn handler (Index.handleSignIn), call that.
+            if (onSignIn) {
+              e.preventDefault();
+              setLoading(true);
+              try {
+                const formData = new FormData(e.currentTarget);
+                const email = formData.get("signin-email") as string;
+                const password = formData.get("signin-password") as string;
+
+                if (!email || !password) {
+                  toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
+                  return;
+                }
+
+                await onSignIn(email, password);
+                onOpenChange(false);
+              } catch (err: any) {
+                toast({ title: "Sign In Failed", description: err?.message || "Something went wrong", variant: "destructive" });
+              } finally {
+                setLoading(false);
+              }
+            } else {
+              // Fallback to local implementation
+              await handleSignIn(e as React.FormEvent<HTMLFormElement>);
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="signin-email">Email</Label>
             <Input id="signin-email" name="signin-email" type="email" required className="bg-background" />
