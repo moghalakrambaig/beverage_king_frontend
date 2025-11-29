@@ -38,7 +38,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
     try {
       // Directly call backend signin
-      const res = await fetch(`${BASE_URL}/api/auth/signin`, {
+      const res = await fetch(`${BASE_URL}/api/auth/customer-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
