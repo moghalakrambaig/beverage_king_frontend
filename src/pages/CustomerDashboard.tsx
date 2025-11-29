@@ -35,7 +35,7 @@ const CustomerDashboard = () => {
         const dealsRes = [
   { 
     id: 1, 
-    title: "Bourbon Bliss 10% Off", 
+    title: "Bourbon Bliss 10% Of", 
     description: "Savor your favorite bourbons with a 10% discount this week only!", 
     discount: "10%" 
   },
