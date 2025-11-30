@@ -108,28 +108,28 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
-  <div className="rounded-2xl bg-card border border-border p-6 shadow-sm flex flex-col items-center text-center">
-    <h2 className="text-2xl font-semibold mb-2">Total Points</h2>
-    <p className="text-5xl font-bold mb-2 text-foreground">{customer.earnedPoints}</p>
-    <p className="text-muted-foreground">Points earned so far</p>
-  </div>
+            <div className="rounded-2xl bg-card border border-border p-6 shadow-sm flex flex-col items-center text-center">
+              <h2 className="text-2xl font-semibold mb-2">Total Points</h2>
+              <p className="text-5xl font-bold mb-2 text-foreground">{customer.earnedPoints}</p>
+              <p className="text-muted-foreground">Points earned so far</p>
+            </div>
 
-  <div className="rounded-2xl bg-card border border-border p-6 shadow-sm">
-    <h2 className="text-2xl font-semibold mb-4">Your Details</h2>
-    <p className="mb-2">
-      <strong className="text-foreground">Name:</strong>{" "}
-      <span className="text-muted-foreground">{customer.Name}</span>
-    </p>
-    <p className="mb-2">
-      <strong className="text-foreground">Email:</strong>{" "}
-      <span className="text-muted-foreground">{customer.Email}</span>
-    </p>
-    <p className="mb-2">
-      <strong className="text-foreground">Mobile:</strong>{" "}
-      <span className="text-muted-foreground">{customer.phone}</span>
-    </p>
-  </div>
-</div>
+            <div className="rounded-2xl bg-card border border-border p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold mb-4">Your Details</h2>
+              <p className="mb-2">
+                <strong className="text-foreground">Name:</strong>{" "}
+                <span className="text-muted-foreground">{customer.Name}</span>
+              </p>
+              <p className="mb-2">
+                <strong className="text-foreground">Email:</strong>{" "}
+                <span className="text-muted-foreground">{customer.Email}</span>
+              </p>
+              <p className="mb-2">
+                <strong className="text-foreground">Mobile:</strong>{" "}
+                <span className="text-muted-foreground">{customer.phone}</span>
+              </p>
+            </div>
+          </div>
 
 
           {/* Exclusive Deals removed per request */}
