@@ -193,7 +193,6 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
-      credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to send reset link");
     return response.json();
