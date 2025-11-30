@@ -64,7 +64,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
 
       if (!res.ok) throw new Error("Failed to send reset link");
 
-      toast({ title: "Email Sent!", description: "A password reset link has been sent to your ." });
+      toast({ title: "If this email exists, a reset link has been sent."});
       setForgotPasswordOpen(false);
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });

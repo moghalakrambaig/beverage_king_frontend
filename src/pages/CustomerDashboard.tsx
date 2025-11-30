@@ -31,7 +31,7 @@ export default function CustomerDashboard() {
         const mapped: Customer = {
           id: res.id || res._id || id,
           Name: res.Name || res.name || res.fullName || res.dynamicFields?.Name || `${res.firstName || ""} ${res.lastName || ""}`.trim(),
-          Email: res.email || res.email || res.dynamicFields?.Email || "",
+          Email: res.email || res.email || res.dynamicFields?.Email || res.dynamicFields?.email || "",
           earnedPoints: res.dynamicFields?.earnedPoints || res.dynamicFields?.EarnedPoints || res.dynamicFields?.points || res.earnedPoints || res.dynamicFields?.points || 0,
           phone: res.Phone || res.phone || res.mobile || res.dynamicFields?.mobile || res.dynamicFields?.Phone || res.dynamicFields?.phone || "N/A",
         };
