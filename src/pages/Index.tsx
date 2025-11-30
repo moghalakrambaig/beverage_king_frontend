@@ -97,20 +97,23 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-baseline gap-3">
+          <Link to="/" className="flex items-center gap-3 overflow-visible">
+
             <img
               src={bkLogo}
               alt="BEVERAGE KING"
-              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110"
+              className="w-12 h-12 object-contain rounded-lg shadow-lg transition-transform duration-300 hover:scale-110 align-middle"
             />
 
-            <span className="relative" style={{ top: "-4px" }}>
-              <span className="text-3xl sm:text-4xl font-extrabold font-cursive
-      bg-gradient-to-r from-primary via-accent to-primary bg-clip-text
-      text-transparent animate-gradient leading-none">
-                Beverage King
-              </span>
+            <span
+              className="inline-block align-middle text-3xl sm:text-4xl font-extrabold font-cursive 
+                   leading-[1.05] translate-y-[1px] pb-1
+                   bg-gradient-to-r from-primary via-accent to-primary 
+                   bg-clip-text text-transparent animate-gradient"
+            >
+              Beverage King
             </span>
+
           </Link>
 
 
