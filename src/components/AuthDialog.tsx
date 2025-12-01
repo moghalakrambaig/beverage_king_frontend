@@ -64,7 +64,7 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
 
       if (!res.ok) throw new Error("Failed to send reset link");
 
-      toast({ title: "If this email exists, a reset link has been sent."});
+      toast({ title: "If this email exists, a reset link has been sent." });
       setForgotPasswordOpen(false);
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });
@@ -119,13 +119,17 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
           </Button>
 
           <div className="text-center mt-2">
-            <button
-              type="button"
-              className="text-sm text-primary hover:underline"
-              onClick={() => setForgotPasswordOpen(true)}
-            >
-              Forgot password?
-            </button>
+            <p className="mt-6 text-center text-muted-foreground text-sm">
+              Want to reset your password?{" "}
+              <button
+                type="button"
+                className="text-sm text-primary hover:underline"
+                onClick={() => setForgotPasswordOpen(true)}
+              >
+                Click here
+              </button>
+            </p>
+
           </div>
         </form>
 

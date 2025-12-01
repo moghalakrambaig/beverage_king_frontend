@@ -119,12 +119,12 @@ export function LoginPage() {
 
         {/* Optional footer text */}
         <p className="mt-6 text-center text-muted-foreground text-sm">
-          Forgot your password?{" "}
+          Want to reset your password?{" "}
           <button
             onClick={() => navigate("/forgot-password")}
             className="underline hover:text-yellow-800"
           >
-            Reset here
+            Click here
           </button>
         </p>
       </div>

@@ -83,7 +83,7 @@ export default function CustomerDashboard() {
               size="sm"
               onClick={() => {
                 sessionStorage.removeItem("user");
-                navigate("/login");
+                navigate("/");
               }}
             >
               <LogOut className="w-4 h-4" /> Log Out
