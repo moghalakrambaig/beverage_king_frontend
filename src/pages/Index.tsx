@@ -45,20 +45,33 @@ const Index = () => {
   const handleSignIn = async (email: string, password: string) => {
     try {
       const res = await api.login(email, password);
-      if (!res.data) throw new Error("Invalid credentials");
-      const customer = res.data;
+
+      if (!res.data || !res.data.customer)
+        throw new Error("Invalid login response");
+
+      const customer = res.data.customer;
+
       sessionStorage.setItem("user", JSON.stringify(customer));
+
       setUser(customer);
       setPoints(customer.points || 0);
       setTotalEarned(customer.points || 0);
-      toast({ title: "Welcome back!", description: "Signed in successfully." });
 
-      // Redirect to customer dashboard
+      toast({
+        title: "Welcome!",
+        description: "Signed in successfully.",
+      });
+
       navigate(`/customer-dashboard/${customer.id}`);
     } catch (err: any) {
-      toast({ title: "Sign in failed", description: err.message || "Invalid credentials", variant: "destructive" });
+      toast({
+        title: "Login failed",
+        description: err.message || "Invalid credentials",
+        variant: "destructive",
+      });
     }
   };
+
 
 
   // Sign Out

@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +15,8 @@ import { Wine, Eye, EyeOff } from "lucide-react";
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+
+  // Called from parent — parent will call the new backend login API
   onSignIn: (email: string, password: string) => Promise<void>;
 }
 
@@ -17,11 +25,13 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
+
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+
   const { toast } = useToast();
 
-  // ==================== Sign In ====================
+  // ================= SIGN IN =================
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -31,17 +41,30 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
     const password = formData.get("signin-password") as string;
 
     if (!email || !password) {
-      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
 
-    await onSignIn(email, password);
+    try {
+      await onSignIn(email, password);
+      onOpenChange(false);
+    } catch (err: any) {
+      toast({
+        title: "Login Failed",
+        description: err.message || "Invalid email or password",
+        variant: "destructive",
+      });
+    }
+
     setLoading(false);
-    onOpenChange(false);
   };
 
-  // ==================== Forgot Password ====================
+  // ================= FORGOT PASSWORD =================
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setForgotLoading(true);
@@ -50,7 +73,11 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
     const email = formData.get("forgot-email") as string;
 
     if (!email) {
-      toast({ title: "Error", description: "Please enter your email", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please enter your email",
+        variant: "destructive",
+      });
       setForgotLoading(false);
       return;
     }
@@ -64,10 +91,17 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
 
       if (!res.ok) throw new Error("Failed to send reset link");
 
-      toast({ title: "If this email exists, a reset link has been sent." });
+      toast({
+        title: "If this email exists, a reset link has been sent.",
+      });
+
       setForgotPasswordOpen(false);
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message || "Something went wrong",
+        variant: "destructive",
+      });
     } finally {
       setForgotLoading(false);
     }
@@ -82,16 +116,25 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
               <Wine className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <DialogTitle className="text-2xl text-center">Sign in to your account</DialogTitle>
+          <DialogTitle className="text-2xl text-center">
+            Sign in to your account
+          </DialogTitle>
           <DialogDescription className="text-center">
             Enter your email and password to access the Insiders Club
           </DialogDescription>
         </DialogHeader>
 
+        {/* LOGIN FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signin-email">Email</Label>
-            <Input id="signin-email" name="signin-email" type="email" required className="bg-background" />
+            <Input
+              id="signin-email"
+              name="signin-email"
+              type="email"
+              required
+              className="bg-background"
+            />
           </div>
 
           <div className="space-y-2">
@@ -109,12 +152,20 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
                 onClick={() => setShowSignInPassword(!showSignInPassword)}
                 className="absolute right-3 flex items-center justify-center h-full"
               >
-                {showSignInPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showSignInPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            disabled={loading}
+          >
             {loading ? "Signing in..." : "Sign In"}
           </Button>
 
@@ -129,16 +180,17 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
                 Click here
               </button>
             </p>
-
           </div>
         </form>
 
-        {/* Forgot Password Dialog */}
+        {/* FORGOT PASSWORD DIALOG */}
         {forgotPasswordOpen && (
           <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
             <DialogContent className="sm:max-w-sm bg-card border-primary/20">
               <DialogHeader>
-                <DialogTitle className="text-lg text-center">Reset Password</DialogTitle>
+                <DialogTitle className="text-lg text-center">
+                  Reset Password
+                </DialogTitle>
                 <DialogDescription className="text-center">
                   Enter your email address to receive a reset link.
                 </DialogDescription>
@@ -147,10 +199,20 @@ export const AuthDialog = ({ open, onOpenChange, onSignIn }: AuthDialogProps) =>
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="forgot-email">Email</Label>
-                  <Input id="forgot-email" name="forgot-email" type="email" required className="bg-background" />
+                  <Input
+                    id="forgot-email"
+                    name="forgot-email"
+                    type="email"
+                    required
+                    className="bg-background"
+                  />
                 </div>
 
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={forgotLoading}>
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  disabled={forgotLoading}
+                >
                   {forgotLoading ? "Sending..." : "Send Reset Link"}
                 </Button>
               </form>
