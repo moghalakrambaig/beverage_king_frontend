@@ -127,7 +127,7 @@ export const api = {
   // ADMIN APIs
   // ==============================
   adminLogin: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/api/auth/signin`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin-login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       credentials: "include",
