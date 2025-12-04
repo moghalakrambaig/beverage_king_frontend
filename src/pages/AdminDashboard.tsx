@@ -9,7 +9,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { ChevronDown, AlertCircle, Loader, LogOut, Upload, Download, MoreVertical } from "lucide-react";
 import bkLogo from "@/assets/bk-logo.jpg";
 
-// utility to format ISO / Date string
+// =========================
+// Utility to format ISO / Date
 const formatDate = (date: string | Date) => {
   if (!date) return "-";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -28,7 +29,7 @@ export function AdminDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // ========================== Load customers
+  // ========================== Load customers on mount
   useEffect(() => {
     const fetchData = async () => {
       const email = sessionStorage.getItem("email");
@@ -38,12 +39,8 @@ export function AdminDashboard() {
         const data = await api.getCustomers();
         setCustomers(data);
 
-        // compute all unique dynamic fields
-        const allCols = Array.from(
-          new Set(
-            data.flatMap((c: any) => Object.keys(c.dynamicFields || {}))
-          )
-        ) as string[];
+        // Compute all dynamic columns
+        const allCols = Array.from(new Set(data.flatMap((c: any) => Object.keys(c.dynamicFields || {}))));
         setColumns(allCols);
       } catch (err) {
         console.error(err);
@@ -60,36 +57,42 @@ export function AdminDashboard() {
     navigate("/login");
   };
 
-  // ========================== File Upload
+  // ========================== CSV Upload (merge existing customers)
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      const data = await api.uploadCsv(file);
-      setCustomers(data);
-      const allCols = Array.from(
-        new Set(data.flatMap((c: any) => Object.keys(c.dynamicFields || {})))
-      ) as string[];
-      setColumns(allCols);
+      const uploadedData = await api.uploadCsv(file); // returns all customers including new
+      // Merge with existing customers by ID
+      const mergedMap: Record<string, any> = {};
+      [...customers, ...uploadedData].forEach(c => {
+        mergedMap[c.id] = c; // new overwrites old if ID exists
+      });
+      const mergedCustomers = Object.values(mergedMap);
+      setCustomers(mergedCustomers);
 
+      // Compute all dynamic columns
+      const allCols = Array.from(new Set(mergedCustomers.flatMap((c: any) => Object.keys(c.dynamicFields || {}))));
+      setColumns(allCols);
     } catch (err) {
       console.error(err);
       alert("Failed to upload CSV");
     }
   };
 
-  // ========================== Delete
+  // ========================== Delete individual customer
   const handleDelete = async (id: any) => {
     if (!id) return;
     try {
       await api.deleteCustomer(id);
-      setCustomers(customers.filter(c => c.id !== id));
+      setCustomers(prev => prev.filter(c => c.id !== id));
     } catch (err) {
       console.error(err);
       alert("Failed to delete customer");
     }
   };
 
+  // ========================== Delete all customers
   const handleDeleteAll = async () => {
     if (!window.confirm("Are you sure you want to delete ALL customers?")) return;
     try {
@@ -103,7 +106,7 @@ export function AdminDashboard() {
     }
   };
 
-  // ========================== Export
+  // ========================== Export CSV/Excel
   const handleExportCSV = () => {
     if (!customers.length || !columns.length) return alert("No data to export");
     const rows = customers.map(c => columns.map(col => c.dynamicFields[col] ?? ""));
@@ -122,18 +125,22 @@ export function AdminDashboard() {
     saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), "customers.xlsx");
   };
 
-  // ========================== Edit modal
+  // ========================== Open Edit Modal
   const openEditModal = (c: any) => {
     setEditingCustomer(JSON.parse(JSON.stringify(c))); // deep copy
     setShowModal(true);
   };
 
+  // ========================== Save changes from edit modal
   const handleUpdateSave = async () => {
     if (!editingCustomer) return;
     setSaving(true);
     try {
-      await api.updateCustomer(editingCustomer.id, editingCustomer);
-      setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? editingCustomer : c));
+      const payload = { ...editingCustomer };
+      if (!payload.newPassword) delete payload.newPassword; // only update password if entered
+
+      const updated = await api.updateCustomer(editingCustomer.id, payload);
+      setCustomers(prev => prev.map(c => c.id === updated.id ? updated : c));
       setShowModal(false);
     } catch (err) {
       console.error(err);
@@ -164,11 +171,9 @@ export function AdminDashboard() {
           <span className="text-xl sm:text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
         </div>
 
-        {/* Right controls: upload / export / delete all + logout */}
         <div className="flex items-center gap-3">
           <input type="file" accept=".csv,.xlsx" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
 
-          {/* Desktop controls: show on small screens and up */}
           <div className="hidden sm:flex items-center gap-2">
             <Button onClick={() => fileInputRef.current?.click()} size="sm"><Upload className="w-4 h-4 mr-1" /> Upload</Button>
 
@@ -185,7 +190,7 @@ export function AdminDashboard() {
             <Button size="sm" variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
           </div>
 
-          {/* Mobile: compact menu with all actions */}
+          {/* Mobile menu */}
           <div className="sm:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -204,7 +209,6 @@ export function AdminDashboard() {
             </DropdownMenu>
           </div>
 
-          {/* visible on all sizes in addition to the compact mobile menu (keeps Logout easy to see on larger screens) */}
           <div className="hidden sm:block">
             <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
           </div>
@@ -212,7 +216,6 @@ export function AdminDashboard() {
       </header>
 
       <main className="pt-24 px-4 pb-8 container mx-auto">
-        {/* spacer under header */}
         <div className="mb-6" />
 
         {customers.length === 0 ? (
@@ -226,26 +229,20 @@ export function AdminDashboard() {
                 <TableHead>ID</TableHead>
                 {columns.map((col) => (
                   <TableHead key={col}>{col}</TableHead>
-                ))}              </TableRow>
+                ))}
+              </TableRow>
             </TableHeader>
             <TableBody>
               {customers.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell>{c.id}</TableCell>
                   {columns.map((col) => (
-                    <TableCell key={col}>
-                      {c.dynamicFields && c.dynamicFields[col] !== undefined
-                        ? c.dynamicFields[col]
-                        : c[col] !== undefined
-                          ? c[col]
-                          : "-"}
-                    </TableCell>
+                    <TableCell key={col}>{c.dynamicFields?.[col] ?? "-"}</TableCell>
                   ))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-
         )}
 
         {/* Edit Modal */}
@@ -270,7 +267,12 @@ export function AdminDashboard() {
                 ))}
                 <div className="flex flex-col md:col-span-2">
                   <label>Password (leave blank to keep current)</label>
-                  <input type="password" className="p-2 border rounded" value={editingCustomer.password ?? ""} onChange={e => setEditingCustomer(prev => ({ ...prev, password: e.target.value }))} />
+                  <input
+                    type="password"
+                    className="p-2 border rounded"
+                    value={editingCustomer.newPassword ?? ""}
+                    onChange={e => setEditingCustomer(prev => ({ ...prev, newPassword: e.target.value }))}
+                  />
                 </div>
               </div>
 
