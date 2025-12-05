@@ -49,10 +49,14 @@ export const api = {
   },
 
   updateCustomer: async (id: string, customer: any) => {
-    const payload = {
+    const payload: any = {
       dynamicFields: customer.dynamicFields,
-      password: customer.password || undefined,
     };
+
+    // Only include password when it exists (for special password update flow)
+    if (customer.password) {
+      payload.password = customer.password;
+    }
 
     const response = await fetch(`${BASE_URL}/api/customers/${id}`, {
       method: "PUT",
@@ -70,7 +74,9 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(
-        typeof data === "object" ? data.message || "Failed to update" : data
+        typeof data === "object"
+          ? data.message || "Failed to update customer"
+          : data
       );
     }
 
@@ -97,7 +103,7 @@ export const api = {
     return { message: "All customers deleted successfully" };
   },
 
-  uploadCsv: async (file: File) => {
+  uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -114,14 +120,18 @@ export const api = {
       data = await response.text();
     }
 
-    if (!response.ok)
+    if (!response.ok) {
       throw new Error(
-        (typeof data === "object" ? data.message : data) ||
-        "Failed to upload CSV"
+        typeof data === "object"
+          ? data.message || "Failed to upload CSV"
+          : data
       );
+    }
 
-    return data; // array of { id, dynamicFields }
+    // Ensure frontend always receives proper structure
+    return data as Array<{ id: string; dynamicFields: Record<string, string> }>;
   },
+
 
   // ==============================
   // ADMIN APIs
