@@ -103,7 +103,9 @@ export const api = {
     return { message: "All customers deleted successfully" };
   },
 
-  uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
+  uploadCsv: async (
+    file: File
+  ): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -128,9 +130,10 @@ export const api = {
       );
     }
 
-    // Ensure frontend always receives proper structure
-    return data as Array<{ id: string; dynamicFields: Record<string, string> }>;
+    // ✅ Fix: return the actual array from backend "data" field
+    return data.data as Array<{ id: string; dynamicFields: Record<string, string> }>;
   },
+
 
 
   // ==============================
