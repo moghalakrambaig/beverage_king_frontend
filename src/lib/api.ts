@@ -144,7 +144,7 @@ export const api = {
   // CUSTOMER LOGIN / SIGNUP
   // ==============================
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/api/customer-login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }, // 🔥 JSON
       credentials: "include",
