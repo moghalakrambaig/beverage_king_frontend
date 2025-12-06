@@ -103,7 +103,7 @@ export const api = {
     return { message: "All customers deleted successfully" };
   },
 
-  uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
+ uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -119,7 +119,8 @@ export const api = {
     throw new Error(resJson?.message || "Failed to upload CSV");
   }
 
-  return resJson.data; // ✅ return only the array
+  // ✅ Ensure we always return an array, even if empty
+  return Array.isArray(resJson?.data) ? resJson.data : [];
 },
 
 

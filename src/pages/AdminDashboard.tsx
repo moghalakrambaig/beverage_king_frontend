@@ -61,31 +61,41 @@ export function AdminDashboard() {
   };
 
   // ========================== File Upload =========================
- const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  try {
-    const customersArray = await api.uploadCsv(file); // now returns array directly
+    try {
+      // ✅ Make sure we get the data property from response
+      const response = await api.uploadCsv(file);
 
-    setCustomers(customersArray); // update state immediately
+      // ✅ Check if response is valid and has data
+      if (!response || !Array.isArray(response)) {
+        throw new Error("Invalid response format from server");
+      }
 
-    // update columns dynamically
-    const allCols = Array.from(
-      new Set(customersArray.flatMap(c =>
-        c.dynamicFields ? Object.keys(c.dynamicFields) : []
-      ))
-    );
-    setColumns(allCols);
+      setCustomers(response);
 
-    setError(null); // clear any previous error
-  } catch (err: any) {
-    console.error(err);
-    setError(err.message || "Failed to upload CSV");
-  } finally {
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-};
+      // ✅ Extract all dynamic field keys safely with proper null checks
+      const allCols = Array.from(
+        new Set(
+          response
+            .filter(c => c && c.dynamicFields) // Filter out null/undefined
+            .flatMap(c => Object.keys(c.dynamicFields || {}))
+        )
+      ) as string[];
+
+      setColumns(allCols);
+      setError(null);
+
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setError(err.message || "Failed to upload CSV");
+      alert("Failed to upload CSV. Please check the file format.");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
 
   // ========================== Delete
