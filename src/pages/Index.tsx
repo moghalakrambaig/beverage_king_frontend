@@ -44,20 +44,25 @@ const Index = () => {
   // Sign In
   const handleSignIn = async (email: string, password: string) => {
   try {
-    const res = await api.login(email, password);
+    // Now this returns just the customer data
+    const customer = await api.login(email, password);
 
-    // ⚠️ FIX: res.data IS the customer, not res.data.customer
-    if (!res.data) {
-      throw new Error("Invalid login response");
+    console.log("Customer data:", customer);
+
+    if (!customer || !customer.id) {
+      throw new Error("Invalid login response - no customer data found");
     }
 
-    const customer = res.data; // Directly use res.data
-
+    // ✅ Store in sessionStorage
     sessionStorage.setItem("user", JSON.stringify(customer));
+    
+    // ✅ Get points from dynamicFields
+    const points = customer.dynamicFields?.["Earned Points"] || 0;
+    const totalEarned = customer.dynamicFields?.["Earned Points"] || 0;
 
     setUser(customer);
-    setPoints(customer.points || 0);
-    setTotalEarned(customer.points || 0);
+    setPoints(points);
+    setTotalEarned(totalEarned);
 
     toast({
       title: "Welcome!",
@@ -65,7 +70,9 @@ const Index = () => {
     });
 
     navigate(`/customer-dashboard/${customer.id}`);
+    
   } catch (err: any) {
+    console.error("Login error:", err);
     toast({
       title: "Login failed",
       description: err.message || "Invalid credentials",

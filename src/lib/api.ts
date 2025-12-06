@@ -143,7 +143,7 @@ export const api = {
   // ==============================
   // CUSTOMER LOGIN / SIGNUP
   // ==============================
-  login: async (email: string, password: string) => {
+ login: async (email: string, password: string) => {
   const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -163,12 +163,12 @@ export const api = {
 
   const responseData = await response.json();
   
-  // ✅ Check if response has the expected structure
+  // ✅ Return just the customer data part
   if (!responseData.data) {
-    throw new Error("Invalid response structure from server");
+    throw new Error("No customer data in response");
   }
   
-  return responseData.data; // Return only the customer data
+  return responseData.data; // Returns just the customer object
 },
 
 
