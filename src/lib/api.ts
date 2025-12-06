@@ -103,36 +103,24 @@ export const api = {
     return { message: "All customers deleted successfully" };
   },
 
-  uploadCsv: async (
-    file: File
-  ): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
-    const formData = new FormData();
-    formData.append("file", file);
+  uploadCsv: async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const response = await fetch(`${BASE_URL}/api/customers/upload-csv`, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
+  const response = await fetch(`${BASE_URL}/api/customers/upload-csv`, {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  });
 
-    let data: any;
-    try {
-      data = await response.json();
-    } catch {
-      data = await response.text();
-    }
+  const resJson = await response.json();
 
-    if (!response.ok) {
-      throw new Error(
-        typeof data === "object"
-          ? data.message || "Failed to upload CSV"
-          : data
-      );
-    }
+  if (!response.ok) {
+    throw new Error(resJson?.message || "Failed to upload CSV");
+  }
 
-    // ✅ Fix: return the actual array from backend "data" field
-    return data.data as Array<{ id: string; dynamicFields: Record<string, string> }>;
-  },
+  return resJson.data; // ONLY the array of customers
+},
 
 
 

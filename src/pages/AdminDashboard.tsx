@@ -60,23 +60,36 @@ export function AdminDashboard() {
     navigate("/login");
   };
 
-  // ========================== File Upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const data = await api.uploadCsv(file);
-      setCustomers(data);
-      const allCols = Array.from(
-        new Set(data.flatMap((c: any) => Object.keys(c.dynamicFields || {})))
-      ) as string[];
-      setColumns(allCols);
+  // ========================== File Upload =========================
+ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload CSV");
+  try {
+    const response = await api.uploadCsv(file); // returns only the 'data' array
+    if (!response || !Array.isArray(response)) {
+      throw new Error("Unexpected server response");
     }
-  };
+
+    setCustomers(response); // update state immediately
+
+    // Update columns dynamically
+    const allCols = Array.from(
+      new Set(
+        response.flatMap((c) =>
+          c.dynamicFields ? Object.keys(c.dynamicFields) : []
+        )
+      )
+    );
+    setColumns(allCols);
+
+  } catch (err: any) {
+    console.error(err);
+    setError("Failed to upload CSV"); // optionally show a message in UI
+  } finally {
+    if (fileInputRef.current) fileInputRef.current.value = ""; // reset input
+  }
+};
 
   // ========================== Delete
   const handleDelete = async (id: any) => {
@@ -131,9 +144,16 @@ export function AdminDashboard() {
   const handleUpdateSave = async () => {
     if (!editingCustomer) return;
     setSaving(true);
+
     try {
       await api.updateCustomer(editingCustomer.id, editingCustomer);
-      setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? editingCustomer : c));
+
+      setCustomers((prev: any[]) =>
+        prev.map((c: any) =>
+          c.id === editingCustomer.id ? editingCustomer : c
+        )
+      );
+
       setShowModal(false);
     } catch (err) {
       console.error(err);
@@ -164,11 +184,9 @@ export function AdminDashboard() {
           <span className="text-xl sm:text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Admin Dashboard</span>
         </div>
 
-        {/* Right controls: upload / export / delete all + logout */}
         <div className="flex items-center gap-3">
           <input type="file" accept=".csv,.xlsx" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
 
-          {/* Desktop controls: show on small screens and up */}
           <div className="hidden sm:flex items-center gap-2">
             <Button onClick={() => fileInputRef.current?.click()} size="sm"><Upload className="w-4 h-4 mr-1" /> Upload</Button>
 
@@ -185,7 +203,6 @@ export function AdminDashboard() {
             <Button size="sm" variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
           </div>
 
-          {/* Mobile: compact menu with all actions */}
           <div className="sm:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -204,7 +221,6 @@ export function AdminDashboard() {
             </DropdownMenu>
           </div>
 
-          {/* visible on all sizes in addition to the compact mobile menu (keeps Logout easy to see on larger screens) */}
           <div className="hidden sm:block">
             <Button onClick={handleLogout} variant="outline"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
           </div>
@@ -212,7 +228,6 @@ export function AdminDashboard() {
       </header>
 
       <main className="pt-24 px-4 pb-8 container mx-auto">
-        {/* spacer under header */}
         <div className="mb-6" />
 
         {customers.length === 0 ? (
@@ -226,8 +241,10 @@ export function AdminDashboard() {
                 <TableHead>ID</TableHead>
                 {columns.map((col) => (
                   <TableHead key={col}>{col}</TableHead>
-                ))}              </TableRow>
+                ))}
+              </TableRow>
             </TableHeader>
+
             <TableBody>
               {customers.map((c) => (
                 <TableRow key={c.id}>
@@ -235,53 +252,68 @@ export function AdminDashboard() {
                   {columns.map((col) => (
                     <TableCell key={col}>
                       {c.dynamicFields && c.dynamicFields[col] !== undefined
-                        ? c.dynamicFields[col]
-                        : c[col] !== undefined
-                          ? c[col]
-                          : "-"}
+                        ? String(c.dynamicFields[col])
+                        : "-"}
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-
         )}
 
-        {/* Edit Modal */}
         {showModal && editingCustomer && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/70 p-4 z-50">
             <div className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-xl">
+
               <h2 className="text-2xl font-semibold mb-4">Edit Customer</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {columns.map(col => (
+                {columns.map((col) => (
                   <div key={col} className="flex flex-col">
                     <label className="text-sm text-gray-600">{col}</label>
                     <input
                       className="p-2 rounded border border-gray-300"
-                      value={editingCustomer.dynamicFields[col] ?? ""}
-                      onChange={e => setEditingCustomer(prev => ({
-                        ...prev,
-                        dynamicFields: { ...prev.dynamicFields, [col]: e.target.value }
-                      }))}
+                      value={editingCustomer.dynamicFields?.[col] ?? ""}
+                      onChange={(e) =>
+                        setEditingCustomer((prev) => ({
+                          ...prev,
+                          dynamicFields: {
+                            ...prev.dynamicFields,
+                            [col]: e.target.value,
+                          },
+                        }))
+                      }
                     />
                   </div>
                 ))}
+
                 <div className="flex flex-col md:col-span-2">
                   <label>Password (leave blank to keep current)</label>
-                  <input type="password" className="p-2 border rounded" value={editingCustomer.password ?? ""} onChange={e => setEditingCustomer(prev => ({ ...prev, password: e.target.value }))} />
+                  <input
+                    type="password"
+                    className="p-2 border rounded"
+                    value={editingCustomer.password ?? ""}
+                    onChange={(e) =>
+                      setEditingCustomer((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
               <div className="mt-6 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-                <Button onClick={handleUpdateSave} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
+                <Button onClick={handleUpdateSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
               </div>
+
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
