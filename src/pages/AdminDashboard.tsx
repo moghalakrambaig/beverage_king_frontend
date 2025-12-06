@@ -66,30 +66,27 @@ export function AdminDashboard() {
   if (!file) return;
 
   try {
-    const response = await api.uploadCsv(file); // returns only the 'data' array
-    if (!response || !Array.isArray(response)) {
-      throw new Error("Unexpected server response");
-    }
+    const customersArray = await api.uploadCsv(file); // now returns array directly
 
-    setCustomers(response); // update state immediately
+    setCustomers(customersArray); // update state immediately
 
-    // Update columns dynamically
+    // update columns dynamically
     const allCols = Array.from(
-      new Set(
-        response.flatMap((c) =>
-          c.dynamicFields ? Object.keys(c.dynamicFields) : []
-        )
-      )
+      new Set(customersArray.flatMap(c =>
+        c.dynamicFields ? Object.keys(c.dynamicFields) : []
+      ))
     );
     setColumns(allCols);
 
+    setError(null); // clear any previous error
   } catch (err: any) {
     console.error(err);
-    setError("Failed to upload CSV"); // optionally show a message in UI
+    setError(err.message || "Failed to upload CSV");
   } finally {
-    if (fileInputRef.current) fileInputRef.current.value = ""; // reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 };
+
 
   // ========================== Delete
   const handleDelete = async (id: any) => {
