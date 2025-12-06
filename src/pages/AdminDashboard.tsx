@@ -57,10 +57,13 @@ export function AdminDashboard() {
 
   const handleLogout = () => {
     sessionStorage.removeItem("email");
-    navigate("/login");
+    navigate("/admin/login");
   };
 
   // ========================== File Upload =========================
+  // Add to your state declarations
+const [uploading, setUploading] = useState(false);
+
  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const file = event.target.files?.[0];
   if (!file) return;
