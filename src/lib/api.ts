@@ -103,25 +103,25 @@ export const api = {
     return { message: "All customers deleted successfully" };
   },
 
- uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
-  const formData = new FormData();
-  formData.append("file", file);
+  uploadCsv: async (file: File): Promise<Array<{ id: string; dynamicFields: Record<string, string> }>> => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const response = await fetch(`${BASE_URL}/api/customers/upload-csv`, {
-    method: "POST",
-    body: formData,
-    credentials: "include",
-  });
+    const response = await fetch(`${BASE_URL}/api/customers/upload-csv`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
 
-  const resJson = await response.json();
+    const resJson = await response.json();
 
-  if (!response.ok) {
-    throw new Error(resJson?.message || "Failed to upload CSV");
-  }
+    if (!response.ok) {
+      throw new Error(resJson?.message || "Failed to upload CSV");
+    }
 
-  // ✅ Ensure we always return an array, even if empty
-  return Array.isArray(resJson?.data) ? resJson.data : [];
-},
+    // ✅ Ensure we always return an array, even if empty
+    return Array.isArray(resJson?.data) ? resJson.data : [];
+  },
 
 
 
