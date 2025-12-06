@@ -144,25 +144,32 @@ export const api = {
   // CUSTOMER LOGIN / SIGNUP
   // ==============================
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }, // 🔥 JSON
-      credentials: "include",
-      body: JSON.stringify({ email, password }),        // 🔥 JSON body
-    });
+  const response = await fetch(`${BASE_URL}/api/auth/customer-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let message = "Invalid customer login";
-      try {
-        const data = JSON.parse(errorText);
-        message = data.message || message;
-      } catch { }
-      throw new Error(message);
-    }
+  if (!response.ok) {
+    const errorText = await response.text();
+    let message = "Invalid customer login";
+    try {
+      const data = JSON.parse(errorText);
+      message = data.message || message;
+    } catch { }
+    throw new Error(message);
+  }
 
-    return response.json();
-  },
+  const responseData = await response.json();
+  
+  // ✅ Check if response has the expected structure
+  if (!responseData.data) {
+    throw new Error("Invalid response structure from server");
+  }
+  
+  return responseData.data; // Return only the customer data
+},
 
 
   signup: async (
