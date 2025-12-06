@@ -61,41 +61,41 @@ export function AdminDashboard() {
   };
 
   // ========================== File Upload =========================
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    try {
-      // ✅ Make sure we get the data property from response
-      const response = await api.uploadCsv(file);
+  setUploading(true);
+  
+  try {
+    // Upload the file
+    await api.uploadCsv(file);
+    
+    // Then fetch the updated data from server
+    const data = await api.getCustomers();
+    setCustomers(data);
 
-      // ✅ Check if response is valid and has data
-      if (!response || !Array.isArray(response)) {
-        throw new Error("Invalid response format from server");
-      }
-
-      setCustomers(response);
-
-      // ✅ Extract all dynamic field keys safely with proper null checks
-      const allCols = Array.from(
-        new Set(
-          response
-            .filter(c => c && c.dynamicFields) // Filter out null/undefined
-            .flatMap(c => Object.keys(c.dynamicFields || {}))
-        )
-      ) as string[];
-
-      setColumns(allCols);
-      setError(null);
-
-    } catch (err: any) {
-      console.error("Upload error:", err);
-      setError(err.message || "Failed to upload CSV");
-      alert("Failed to upload CSV. Please check the file format.");
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+    // Recompute columns
+    const allCols = Array.from(
+      new Set(
+        data.flatMap((c: any) => Object.keys(c.dynamicFields || {}))
+      )
+    ) as string[];
+    setColumns(allCols);
+    
+    setError(null);
+    
+    alert("CSV uploaded successfully!");
+    
+  } catch (err: any) {
+    console.error("Upload error:", err);
+    setError(err.message || "Failed to upload CSV");
+    alert("Failed to upload CSV. Please check the file format.");
+  } finally {
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+};
 
 
   // ========================== Delete
