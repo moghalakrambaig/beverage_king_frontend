@@ -262,25 +262,27 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="py-10 px-4 border-t border-border">
-        <div className="container mx-auto text-center text-muted-foreground">
+  <div className="container mx-auto text-center text-muted-foreground">
 
-          {/* Modern Share Box */}
-          <div className="mt-6 flex flex-col items-center gap-4">
+    {/* Modern Share Box */}
+    <div className="mt-6 flex flex-col items-center gap-4">
 
-            {/* Share Button */}
-            <button
-              onClick={handleShare}
-              className="
+      {/* Share Button */}
+      <button
+        type="button"
+        onClick={handleShare}
+        className="
           flex items-center gap-2 px-6 py-3 rounded-full
           bg-gradient-to-r from-primary via-purple-500 to-pink-500
           text-white font-semibold shadow-lg
           hover:scale-105 hover:shadow-xl
           transition-all duration-300
         "
-            >
-              <Share2 className="w-5 h-5" />
-              Share This Website
-            </button>
+      >
+        <Share2 className="w-5 h-5" />
+        Share It
+      </button>
+
           </div>
           {/* Footer Text */}
           <p className="mt-6 text-sm">© 2025 Beverage King. All rights reserved.</p>
